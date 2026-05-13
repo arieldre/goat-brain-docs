@@ -17,6 +17,11 @@ const FIELDS = [
 const EMBED_BATCH = 10; // Pinecone embed limit per request
 const SCHEMA_VERSION = 1;
 
+// Pinecone requires ASCII-only IDs — replace en/em dash, strip remaining non-ASCII
+function sanitizeId(str) {
+  return str.replace(/[–—]/g, '-').replace(/[^\x00-\x7F]/g, '');
+}
+
 async function fetchInsights(game, since, until) {
   const { token, account } = getCreds(game);
   const params = {
@@ -202,7 +207,7 @@ async function run() {
     }
 
     const pineconeVecs = batch.map((c, j) => ({
-      id: `${game}|${c.creative_name}|${c.platform}|${c.objective}`, // BP-105: game prefix
+      id: sanitizeId(`${game}|${c.creative_name}|${c.platform}|${c.objective}`), // BP-105: game prefix
       values: vectors[j],
       metadata: {
         game,
