@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Memory System</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #7c3aed;
+    --accent-soft: #4c1d95;
+    --text: #e8e8e8;
+    --muted: #666;
+    --tag-bg: #1e1e2e;
+    --tag-text: #a78bfa;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --blue: #3b82f6;
+    --pink: #ec4899;
+    --teal: #14b8a6;
+    --orange: #f97316;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 40px 24px 80px;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), #a855f7);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  h1 span { color: var(--muted); font-weight: 400; font-size: 16px; display: block; margin-top: 2px; }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .flow-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .flow-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid;
+  }
+
+  .flow-label { font-size: 10px; color: var(--muted); text-align: center; max-width: 60px; white-space: nowrap; }
+  .flow-arrow { color: var(--muted); font-size: 18px; margin-top: -20px; }
+
+  .layers { display: flex; flex-direction: column; gap: 16px; }
+
+  .layer {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--card);
+    transition: border-color 0.2s;
+  }
+
+  .layer:hover { border-color: #3a3a3a; }
+
+  .layer-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .layer-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .layer-title { font-size: 15px; font-weight: 600; }
+  .layer-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .layer-meta { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    white-space: nowrap;
+  }
+
+  .badge.green { background: #052e16; color: var(--green); }
+  .badge.amber { background: #1c1400; color: var(--amber); }
+  .badge.blue { background: #0c1a33; color: var(--blue); }
+  .badge.pink { background: #2d0a1a; color: var(--pink); }
+  .badge.teal { background: #021a18; color: var(--teal); }
+  .badge.orange { background: #1f0e00; color: var(--orange); }
+
+  .layer-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .col {
+    padding: 16px 20px;
+  }
+
+  .col:first-child { border-right: 1px solid var(--border); }
+
+  .col-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .file-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin: 2px 2px 2px 0;
+    color: #ccc;
+  }
+
+  .example-block {
+    background: #0e0e0e;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    color: #b0b0b0;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .example-block .k { color: #a78bfa; }
+  .example-block .v { color: #86efac; }
+  .example-block .c { color: #6b7280; }
+
+  .purpose-text {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.6;
+  }
+
+  .purpose-text strong { color: var(--text); }
+
+  .connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+    color: #333;
+    font-size: 18px;
+  }
+
+  .flow-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-top: 32px;
+  }
+
+  .flow-section h3 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  .step-arrow {
+    color: #444;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-arrow.right { color: #6d28d9; }
+
+  .flow-step strong { color: var(--text); }
+  .flow-step code {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    background: #111;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #a78bfa;
+  }
+
+  @media (max-width: 600px) {
+    .layer-body { grid-template-columns: 1fr; }
+    .col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+    .flow { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">MEM</div>
+    <div>
+      <h1>Claude Memory System
+        <span>6-layer persistent knowledge architecture</span>
+      </h1>
+    </div>
+  </header>
+
+  <!-- Visual flow -->
+  <div class="flow">
+    <div class="flow-node">
+      <div class="flow-dot" style="color:#6366f1;border-color:#6366f1;background:#1e1b4b">L0</div>
+      <div class="flow-label">Ephemeral</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-dot" style="color:#f59e0b;border-color:#f59e0b;background:#1c1400">L1</div>
+      <div class="flow-label">Episodic</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-dot" style="color:#22c55e;border-color:#22c55e;background:#052e16">L2</div>
+      <div class="flow-label">Semantic</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-dot" style="color:#3b82f6;border-color:#3b82f6;background:#0c1a33">L3</div>
+      <div class="flow-label">Procedural</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-dot" style="color:#ec4899;border-color:#ec4899;background:#2d0a1a">L4</div>
+      <div class="flow-label">Entity</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-dot" style="color:#14b8a6;border-color:#14b8a6;background:#021a18">L5</div>
+      <div class="flow-label">Skill</div>
+    </div>
+  </div>
+
+  <div class="layers">
+
+    <!-- L0 -->
+    <div class="layer">
+      <div class="layer-header">
+        <div class="layer-num" style="background:#1e1b4b;color:#818cf8">L0</div>
+        <div>
+          <div class="layer-title">Ephemeral</div>
+          <div class="layer-sub">Current session state only</div>
+        </div>
+        <div class="layer-meta">
+          <span class="badge" style="background:#1e1b4b;color:#818cf8">7 days max</span>
+          <span class="badge" style="background:#1e1b4b;color:#818cf8">per-session</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="col">
+          <div class="col-label">Files</div>
+          <span class="file-pill">.claude/handoff.md</span>
+          <span class="file-pill">.pr/</span>
+          <br><br>
+          <div class="purpose-text">What's in progress, what's next, what's blocked. <strong>Auto-read on session start.</strong> Written by <code style="font-size:11px;font-family:monospace;background:#111;padding:1px 5px;border-radius:4px;color:#a78bfa">/context-handoff</code>. Dies after session completes.</div>
+        </div>
+        <div class="col">
+          <div class="col-label">Example</div>
+          <div class="example-block"><span class="k">Next Action:</span> <span class="v">Deploy goat-mcp to Fly.io after GitHub push</span>
+<span class="k">Status:</span> <span class="v">CONFIRM</span>
+<span class="k">Last Commit:</span> <span class="v">abc1234 — feat: add fb_analyze_creatives</span>
+<span class="k">Deploy Status:</span> <span class="v">NOT deployed</span>
+<span class="k">Remaining Gaps:</span> <span class="v">Unity API rate limit not handled</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- L1 -->
+    <div class="layer">
+      <div class="layer-header">
+        <div class="layer-num" style="background:#1c1400;color:#f59e0b">L1</div>
+        <div>
+          <div class="layer-title">Episodic</div>
+          <div class="layer-sub">Session history, rolling append</div>
+        </div>
+        <div class="layer-meta">
+          <span class="badge amber">permanent</span>
+          <span class="badge amber">never deleted</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="col">
+          <div class="col-label">Files</div>
+          <span class="file-pill">~/.claude/AGENTS-LOG.md</span>
+          <br><br>
+          <div class="purpose-text">Per-session record of what agents did, outcomes, key decisions. Appended each session end. Referenced by date when tracing why something was built a certain way.</div>
+        </div>
+        <div class="col">
+          <div class="col-label">Example</div>
+          <div class="example-block"><span class="c">### 2026-05-12 — creative vectorization</span>
+<span class="k">Agents:</span> <span class="v">code-reviewer (BG) → GOOD</span>
+<span class="k">Output:</span> <span class="v">flagged missing game prefix in vector key</span>
+<span class="k">Promoted:</span> <span class="v">BP-105 → BEST_PRACTICES.md</span>
+<span class="k">Decision:</span> <span class="v">namespace per game, not per platform</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- L2 -->
+    <div class="layer">
+      <div class="layer-header">
+        <div class="layer-num" style="background:#052e16;color:#22c55e">L2</div>
+        <div>
+          <div class="layer-title">Semantic</div>
+          <div class="layer-sub">Promoted non-obvious patterns, compounding over time</div>
+        </div>
+        <div class="layer-meta">
+          <span class="badge green">slow decay</span>
+          <span class="badge green">quarterly review</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="col">
+          <div class="col-label">Files</div>
+          <span class="file-pill">~/.claude/BEST_PRACTICES.md</span>
+          <span class="file-pill">memory/knowledge_base.md</span>
+          <br><br>
+          <div class="purpose-text">Only promoted after trigger test: <strong>"Would a different engineer hit this same non-obvious behavior?"</strong> If yes → add. Synced to Obsidian vault at <code style="font-size:11px;font-family:monospace;background:#111;padding:1px 5px;border-radius:4px;color:#a78bfa">AI-Knowledge/</code>.</div>
+        </div>
+        <div class="col">
+          <div class="col-label">Example</div>
+          <div class="example-block"><span class="k">BP-105</span> — Creative vector key needs game prefix
+<span class="c">Same video name exists in INV + UH →</span>
+<span class="c">silent Pinecone overwrite without prefix</span>
+<span class="k">Key:</span> <span class="v">game|creative_name|platform|objective</span>
+<span class="k">Last hit:</span> <span class="v">2026-05-11</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- L3 -->
+    <div class="layer">
+      <div class="layer-header">
+        <div class="layer-num" style="background:#0c1a33;color:#3b82f6">L3</div>
+        <div>
+          <div class="layer-title">Procedural</div>
+          <div class="layer-sub">How Claude behaves — rarely changes</div>
+        </div>
+        <div class="layer-meta">
+          <span class="badge blue">very slow decay</span>
+          <span class="badge blue">version-bumped</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="col">
+          <div class="col-label">Files</div>
+          <span class="file-pill">~/.claude/CLAUDE.md</span>
+          <span class="file-pill">~/.claude/AGENTS.md</span>
+          <span class="file-pill">{project}/AGENTS.md</span>
+          <br><br>
+          <div class="purpose-text">Global behavior rules, agent roster, workflow, git rules, code quality standards. Per-project AGENTS.md overrides global for that project.</div>
+        </div>
+        <div class="col">
+          <div class="col-label">Example</div>
+          <div class="example-block"><span class="k">Model roles:</span>
+  <span class="v">orchestrator = Opus</span>
+  <span class="v">executors   = Sonnet</span>
+  <span class="v">scouts      = Haiku</span>
+
+<span class="k">Plan Review Gate:</span>
+  <span class="v">2 parallel reviewers before 5+ phase plans</span>
+
+<span class="k">Never:</span> <span class="v">delegate understanding to subagents</span>
+<span class="k">Always:</span> <span class="v">confirm before git push / deploy</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- L4 -->
+    <div class="layer">
+      <div class="layer-header">
+        <div class="layer-num" style="background:#2d0a1a;color:#ec4899">L4</div>
+        <div>
+          <div class="layer-title">Entity</div>
+          <div class="layer-sub">Who, what, where — project context</div>
+        </div>
+        <div class="layer-meta">
+          <span class="badge pink">medium decay</span>
+          <span class="badge pink">Pinecone indexed</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="col">
+          <div class="col-label">Files</div>
+          <span class="file-pill">memory/user_*.md</span>
+          <span class="file-pill">memory/feedback_*.md</span>
+          <span class="file-pill">memory/project_*.md</span>
+          <span class="file-pill">memory/reference_*.md</span>
+          <br><br>
+          <div class="purpose-text">Indexed in <code style="font-size:11px;font-family:monospace;background:#111;padding:1px 5px;border-radius:4px;color:#a78bfa">MEMORY.md</code>. Auto-queried via <strong>Pinecone semantic search</strong> (score ≥ 0.72, top 4 injected per prompt). Verify before acting — named files/functions may no longer exist.</div>
+        </div>
+        <div class="col">
+          <div class="col-label">Example</div>
+          <div class="example-block"><span class="c">reference_uh_game_profile.md</span>
+<span class="k">3 gangs:</span> <span class="v">El Cuco / Carbons / Golden Coppers</span>
+<span class="k">#1 hook:</span> <span class="v">Gunsmith depth (500+ configs)</span>
+<span class="k">#1 churn:</span> <span class="v">Bot lobbies — "no real multiplayer"</span>
+<span class="k">Key quote:</span> <span class="v">"If ApexM and CODM had a baby"</span>
+<span class="k">UA target:</span> <span class="v">US primary, no paid UA yet</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- L5 -->
+    <div class="layer">
+      <div class="layer-header">
+        <div class="layer-num" style="background:#021a18;color:#14b8a6">L5</div>
+        <div>
+          <div class="layer-title">Skill</div>
+          <div class="layer-sub">Keyword-triggered context injection</div>
+        </div>
+        <div class="layer-meta">
+          <span class="badge teal">slow decay</span>
+          <span class="badge teal">auto-injected</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="col">
+          <div class="col-label">Files</div>
+          <span class="file-pill">skills/facebook-ads/</span>
+          <span class="file-pill">skills/google-ads/</span>
+          <span class="file-pill">skills/supabase/</span>
+          <span class="file-pill">skills/vercel-nextjs/</span>
+          <span class="file-pill">skills/security/</span>
+          <span class="file-pill">skills/mcp-builder/</span>
+          <br><br>
+          <div class="purpose-text">Created only when: domain in <strong>3+ sessions</strong> + <strong>5+ BPs</strong> + <strong>high-consequence mistakes</strong>. Injected automatically — no manual invocation needed.</div>
+        </div>
+        <div class="col">
+          <div class="col-label">Example — "create adset" triggers facebook-ads skill</div>
+          <div class="example-block"><span class="k">BP-109:</span> <span class="v">effective_status → inside filtering[]</span>
+<span class="c">          not a top-level query param</span>
+
+<span class="k">BP-110:</span> <span class="v">breakdowns=country → never in fields</span>
+<span class="c">          dimension appears automatically per row</span>
+
+<span class="k">BP-108:</span> <span class="v">iOS = 2 rules, Android = 3 rules</span>
+<span class="c">          order matters in asset_customization_rules</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- How layers connect -->
+  <div class="flow-section">
+    <h3>How Layers Connect — Per Session</h3>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <span class="step-arrow right">→</span>
+        <div><strong>Session starts</strong> — L0 handoff.md read, "Resuming from: {next action}" announced. L3 + triggered L5 skills always loaded. L4 top-4 Pinecone hits injected into context automatically.</div>
+      </div>
+      <div class="flow-step">
+        <span class="step-arrow right">→</span>
+        <div><strong>During session</strong> — L2 loaded on keyword match from BEST_PRACTICES.md header. L5 injected when trigger words appear in user message.</div>
+      </div>
+      <div class="flow-step">
+        <span class="step-arrow right">→</span>
+        <div><strong>Session ends</strong> — L0 handoff.md written. L1 AGENTS-LOG appended. Promotion protocol runs: scan handoff → trigger test → promote to L2. L4 entity files updated if new user/project/feedback facts emerged.</div>
+      </div>
+      <div class="flow-step">
+        <span class="step-arrow right">→</span>
+        <div><strong>If domain hit 5+ BPs this session</strong> → consider creating L5 skill file. Current candidates: <code>whatsapp-hermes</code> (3 BPs), <code>fly-io</code> (2 BPs), <code>sveltekit</code> (4 BPs).</div>
+      </div>
+      <div class="flow-step">
+        <span class="step-arrow right">→</span>
+        <div><strong>Quarterly</strong> — L2 review: archive BPs with <code>Last hit</code> &gt; 90 days in inactive domains. Check for contradicting BPs → merge with "except when" clause.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

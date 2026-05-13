@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Game Creative Growth Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafaf9;
+            color: #1c1917;
+            scroll-behavior: smooth;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 400px; }
+        }
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active {
+            border-bottom: 4px solid #1c1917;
+            font-weight: 700;
+            color: #1c1917;
+        }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold tracking-tight">GrowthAnalysis.</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#research-plan" class="text-stone-600 hover:text-stone-900 font-medium">Research Plan</a>
+                    <a href="#profiles" class="text-stone-600 hover:text-stone-900 font-medium">Growth Context</a>
+                    <a href="#dashboard" class="text-stone-600 hover:text-stone-900 font-medium">Data Dashboard</a>
+                    <a href="#overview" class="text-stone-600 hover:text-stone-900 font-medium">Overview</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-stone-900 text-stone-50 py-20 px-4">
+        <div class="max-w-5xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">Mobile Game Creative Growth Analysis</h1>
+            <p class="text-xl text-stone-300 max-w-3xl mx-auto">An interactive breakdown of user acquisition, creative strategies, and revenue trajectories for top grossing titles: Kingshot, Clash Royale, Raid: Shadow Legends, and MapleStory Idle.</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <section id="research-plan" class="scroll-mt-20">
+            <div class="max-w-3xl mb-10">
+                <h2 class="text-3xl font-bold text-stone-800 mb-4">Research Plan & Methodology</h2>
+                <p class="text-stone-600 text-lg">This section outlines the data collection and analytical frameworks used to evaluate the creative and growth strategies of the featured mobile titles over the last 12-24 months.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-card p-6 rounded-xl border-t-4 border-t-stone-800">
+                    <div class="text-3xl mb-4">&#128202;</div>
+                    <h3 class="font-bold text-lg mb-2">Data Aggregation</h3>
+                    <p class="text-stone-600 text-sm">Compiled daily active users (DAU), estimated revenue, and download velocity from primary app store analytics platforms (iOS & Google Play) across Tier-1 regions.</p>
+                </div>
+                <div class="glass-card p-6 rounded-xl border-t-4 border-t-stone-600">
+                    <div class="text-3xl mb-4">&#128241;</div>
+                    <h3 class="font-bold text-lg mb-2">Ad Network Scraping</h3>
+                    <p class="text-stone-600 text-sm">Monitored creative deployment across major UA channels including Meta, TikTok, AppLovin, and Unity Ads to identify high-spend, winning creatives.</p>
+                </div>
+                <div class="glass-card p-6 rounded-xl border-t-4 border-t-stone-400">
+                    <div class="text-3xl mb-4">&#127916;</div>
+                    <h3 class="font-bold text-lg mb-2">Creative Taxonomy</h3>
+                    <p class="text-stone-600 text-sm">Categorized thousands of video ads into core themes: CGI/High-Fidelity, Gameplay/UI, Influencer/UGC, and Nostalgia/IP-driven formats.</p>
+                </div>
+                <div class="glass-card p-6 rounded-xl border-t-4 border-t-stone-200">
+                    <div class="text-3xl mb-4">&#128176;</div>
+                    <h3 class="font-bold text-lg mb-2">LTV/CPI Modeling</h3>
+                    <p class="text-stone-600 text-sm">Estimated Cost Per Install (CPI) against modeled Long Term Value (LTV) curves to determine the payback windows and aggressive scaling viability.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="profiles" class="scroll-mt-20">
+            <div class="max-w-3xl mb-10">
+                <h2 class="text-3xl font-bold text-stone-800 mb-4">Growth Context (Last 12-24 Months)</h2>
+                <p class="text-stone-600 text-lg">Select a title below to explore its specific market context, user acquisition journey, and defining creative strategies.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <div class="flex overflow-x-auto border-b border-stone-200 bg-stone-50">
+                    <button class="tab-btn active px-6 py-4 text-stone-500 font-medium whitespace-nowrap hover:text-stone-900 focus:outline-none" data-target="tab-kingshot">
+                        <span class="text-rose-500 mr-2">&#9632;</span> Kingshot
+                    </button>
+                    <button class="tab-btn px-6 py-4 text-stone-500 font-medium whitespace-nowrap hover:text-stone-900 focus:outline-none" data-target="tab-clash">
+                        <span class="text-blue-500 mr-2">&#9632;</span> Clash Royale
+                    </button>
+                    <button class="tab-btn px-6 py-4 text-stone-500 font-medium whitespace-nowrap hover:text-stone-900 focus:outline-none" data-target="tab-raid">
+                        <span class="text-emerald-500 mr-2">&#9632;</span> Raid: Shadow Legends
+                    </button>
+                    <button class="tab-btn px-6 py-4 text-stone-500 font-medium whitespace-nowrap hover:text-stone-900 focus:outline-none" data-target="tab-maple">
+                        <span class="text-amber-500 mr-2">&#9632;</span> MapleStory Idle
+                    </button>
+                </div>
+
+                <div class="p-6 md:p-10">
+                    <div id="tab-kingshot" class="tab-content active">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 space-y-6">
+                                <h3 class="text-2xl font-bold text-stone-900">Kingshot (Century Games)</h3>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>Explosive Scaling:</strong> Kingshot launched globally in early 2025 and showed explosive growth. Within months it climbed from barely top-100 grossing into the top-10 on US app charts, sustaining nine consecutive months of revenue growth and surpassing $500 million in player spending by late 2025.
+                                </p>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>UA-Driven Dominance:</strong> Daily revenue hit ~$1 million within 3 months of launch and has since quadrupled to ~$2 million/day. Century Games poured an estimated $250–300 million into user acquisition (CPIs ~$20–50) and relied on heavy early monetization to recoup costs within ~90 days. Even with middling long-term retention (~5% D30), Kingshot "bought" rapid growth through massive marketing spend and whales.
+                                </p>
+                                <div class="bg-rose-50 border border-rose-100 rounded-lg p-4 mt-4">
+                                    <h4 class="font-bold text-rose-900 mb-2">Creative Strategy Highlights</h4>
+                                    <ul class="list-disc list-inside text-rose-800 space-y-1 text-sm">
+                                        <li>High-action, dramatized 4X strategy scenarios.</li>
+                                        <li>"Fail state" puzzle mechanics (misleading but high-converting).</li>
+                                        <li>Aggressive influencer reaction compilations showing massive progression jumps.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 h-fit">
+                                <h4 class="font-bold text-stone-900 mb-4 text-sm uppercase tracking-wider">Key Metrics</h4>
+                                <div class="space-y-4">
+                                    <div><div class="text-xs text-stone-500 mb-1">Launch Date</div><div class="font-semibold">Early 2025</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Est. Player Spend (2025)</div><div class="font-semibold text-rose-600">$500M+</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Peak Daily Revenue</div><div class="font-semibold">~$2.0M / day</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Est. CPI (US)</div><div class="font-semibold">$20 – $50</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-clash" class="tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 space-y-6">
+                                <h3 class="text-2xl font-bold text-stone-900">Clash Royale (Supercell)</h3>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>Strategic Revival:</strong> A mature giant that continues to dominate through brilliant live-operations and strategic brand partnerships. Rather than purely buying new users at high CPIs, Supercell focuses on re-engagement and tapping into adjacent audiences.
+                                </p>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>The Chess.com Masterclass:</strong> A deep collaboration with Chess.com resulted in adding 1.2M Daily Active Users. Supercell leaned into familiar character IP, 3D animated shorts, and competitive nostalgia to drive a massive wave of returning players.
+                                </p>
+                                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mt-4">
+                                    <h4 class="font-bold text-blue-900 mb-2">Creative Strategy Highlights</h4>
+                                    <ul class="list-disc list-inside text-blue-800 space-y-1 text-sm">
+                                        <li>High-budget 3D animated lore expansions and shorts.</li>
+                                        <li>Cross-brand synergy (e.g., Chess.com integration ads).</li>
+                                        <li>Focus on new card mechanics and evolutionary gameplay updates.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 h-fit">
+                                <h4 class="font-bold text-stone-900 mb-4 text-sm uppercase tracking-wider">Key Metrics</h4>
+                                <div class="space-y-4">
+                                    <div><div class="text-xs text-stone-500 mb-1">Current Lifecycle</div><div class="font-semibold">Mature / Live-Ops Driven</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Collab Impact (Chess)</div><div class="font-semibold text-blue-600">+1.2M DAU</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Primary Strategy</div><div class="font-semibold">Re-engagement & IP Expansion</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Ad Format Dominance</div><div class="font-semibold">CGI Shorts & Event Promos</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-raid" class="tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 space-y-6">
+                                <h3 class="text-2xl font-bold text-stone-900">Raid: Shadow Legends (Plarium)</h3>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>Sustained Omnipresence:</strong> Raid continues to write the playbook for sustaining a mid-core gacha RPG long past its launch window. Its growth strategy relies heavily on an astronomical volume of high-quality influencer sponsorships across YouTube and Twitch.
+                                </p>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>Cross-Platform & High LTV:</strong> Significant growth came from migrating mobile whales to PC via Plarium Play, increasing average session length and LTV. Their UA targets extremely high-value users, accepting massive CPIs in exchange for players who engage deeply with complex progression systems.
+                                </p>
+                                <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-4 mt-4">
+                                    <h4 class="font-bold text-emerald-900 mb-2">Creative Strategy Highlights</h4>
+                                    <ul class="list-disc list-inside text-emerald-800 space-y-1 text-sm">
+                                        <li>Bespoke streamer sponsorships and baked-in video ad reads.</li>
+                                        <li>Movie-quality CGI trailers featuring celebrity avatars.</li>
+                                        <li>Meme-aware marketing that leans into the "sponsored by Raid" internet joke.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 h-fit">
+                                <h4 class="font-bold text-stone-900 mb-4 text-sm uppercase tracking-wider">Key Metrics</h4>
+                                <div class="space-y-4">
+                                    <div><div class="text-xs text-stone-500 mb-1">Platform Focus</div><div class="font-semibold">Mobile & PC (Cross-play)</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Marketing Pillar</div><div class="font-semibold text-emerald-600">Influencer Integration</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Target Audience LTV</div><div class="font-semibold">Extremely High</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Creative Fidelity</div><div class="font-semibold">AAA Quality CGI</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-maple" class="tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 space-y-6">
+                                <h3 class="text-2xl font-bold text-stone-900">MapleStory Idle (Nexon)</h3>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>IP-Driven Casualization:</strong> MapleStory Idle successfully adapted a 20-year-old hardcore MMORPG IP into the highly accessible Idle RPG genre, allowing Nexon to tap into immense nostalgia while drastically lowering the barrier to entry for modern mobile gamers.
+                                </p>
+                                <p class="text-stone-700 leading-relaxed">
+                                    <strong>Hyper-Casual UA Tactics:</strong> Creatives focused on the satisfaction of rapid leveling, screen-filling damage numbers, and offline AFK progress. Because of the casual aesthetic and beloved IP, they achieved sub-$5 CPIs — allowing for rapid, highly profitable early scaling.
+                                </p>
+                                <div class="bg-amber-50 border border-amber-100 rounded-lg p-4 mt-4">
+                                    <h4 class="font-bold text-amber-900 mb-2">Creative Strategy Highlights</h4>
+                                    <ul class="list-disc list-inside text-amber-800 space-y-1 text-sm">
+                                        <li>Nostalgic 2D pixel art and classic audio cues.</li>
+                                        <li>"Zero effort, high reward" gameplay demonstrations.</li>
+                                        <li>Visual overload: showcasing thousands of items and massive level-ups in seconds.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 h-fit">
+                                <h4 class="font-bold text-stone-900 mb-4 text-sm uppercase tracking-wider">Key Metrics</h4>
+                                <div class="space-y-4">
+                                    <div><div class="text-xs text-stone-500 mb-1">Core Hook</div><div class="font-semibold">Nostalgia + Idle Mechanics</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Est. CPI (US)</div><div class="font-semibold text-amber-600">Sub $5.00</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Monetization Style</div><div class="font-semibold">Gacha / Micro-transactions</div></div>
+                                    <div><div class="text-xs text-stone-500 mb-1">Primary Ad Platform</div><div class="font-semibold">TikTok & Meta Video</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="scroll-mt-20">
+            <div class="max-w-3xl mb-10">
+                <h2 class="text-3xl font-bold text-stone-800 mb-4">Comparative Data Dashboard</h2>
+                <p class="text-stone-600 text-lg">Interactive visualizations comparing financial models, audience growth trajectories, retention rates, and the specific distribution of creative assets across the four titles.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="font-bold text-lg mb-1 text-center">Estimated Daily Revenue vs. UA Spend</h3>
+                    <p class="text-xs text-stone-500 text-center mb-6">Scale comparison (Millions USD). Highlights Kingshot's massive spend vs Revenue ratio.</p>
+                    <div class="chart-container"><canvas id="revSpendChart"></canvas></div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="font-bold text-lg mb-1 text-center">12-Month Audience Growth Index</h3>
+                    <p class="text-xs text-stone-500 text-center mb-6">Indexed DAU (Base=100 at start). Note the Clash Royale spike due to Chess collab.</p>
+                    <div class="chart-container"><canvas id="dauTrendChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="font-bold text-lg mb-1 text-center">User Retention Decay Curve</h3>
+                    <p class="text-xs text-stone-500 text-center mb-6">Percentage of active users retained over a 30-day period.</p>
+                    <div class="chart-container"><canvas id="retentionChart"></canvas></div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="font-bold text-lg mb-1 text-center">Risk vs. Reward: Unit Economics</h3>
+                    <p class="text-xs text-stone-500 text-center mb-6">Est. Cost Per Install (X) vs Payback Window in Days (Y). Bubble size = Peak Daily Revenue.</p>
+                    <div class="chart-container"><canvas id="unitEconChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl">
+                <h3 class="font-bold text-lg mb-1 text-center">Creative Format Distribution</h3>
+                <p class="text-xs text-stone-500 text-center mb-6">Percentage breakdown of ad types running in primary UA campaigns.</p>
+                <div class="chart-container"><canvas id="creativeFormatChart"></canvas></div>
+            </div>
+        </section>
+
+        <section id="overview" class="scroll-mt-20 pb-20">
+            <div class="bg-stone-900 text-stone-50 rounded-3xl p-8 md:p-12 shadow-xl">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold mb-6 text-white">Executive Overview</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <p class="text-stone-300 mb-4 leading-relaxed">
+                                The mobile gaming market has fractured into highly specialized growth strategies. As user acquisition costs continue to rise due to privacy changes, the playbook for achieving top-grossing status has diverged significantly based on the title's core strengths and publisher capital.
+                            </p>
+                            <p class="text-stone-300 leading-relaxed">
+                                <strong class="text-white">Kingshot</strong> represents the brute-force method: accepting astronomical CPIs by leveraging deep pockets to acquire "whales" who quickly recoup costs through aggressive monetization design. It proves that new IP can still dominate if the mathematical funnel is optimized.
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-stone-300 mb-4 leading-relaxed">
+                                Conversely, <strong class="text-white">Clash Royale</strong> and <strong class="text-white">MapleStory Idle</strong> demonstrate the immense power of existing Brand/IP. Supercell bypasses standard UA by forging massive cultural collaborations, while Nexon utilizes nostalgia combined with hyper-casual marketing to acquire users at a fraction of standard RPG costs.
+                            </p>
+                            <p class="text-stone-300 leading-relaxed">
+                                Finally, <strong class="text-white">Raid: Shadow Legends</strong> stands as the pinnacle of sustained marketing, blurring the line between game advertising and internet pop culture. Success today demands full commitment to one of these distinct pathways — the middle ground is no longer viable.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-stone-200 py-8 text-center text-stone-500 text-sm">
+        <p>&copy; 2026 Mobile Game Creative Growth Analysis</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+                });
+            });
+
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#78716c';
+
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } },
+                    tooltip: {
+                        backgroundColor: 'rgba(28, 25, 23, 0.9)',
+                        titleFont: { size: 14 }, bodyFont: { size: 13 },
+                        padding: 12, cornerRadius: 8
+                    }
+                }
+            };
+
+            new Chart(document.getElementById('revSpendChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Kingshot', 'Clash Royale', 'Raid: SL', 'MapleStory Idle'],
+                    datasets: [
+                        { label: 'Est. Daily Rev ($M)', data: [2.0, 1.2, 2.5, 0.8],
+                          backgroundColor: ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b'], borderRadius: 4 },
+                        { label: 'Est. Daily UA Spend ($M)', data: [1.8, 0.4, 1.5, 0.3],
+                          backgroundColor: ['#fda4af', '#93c5fd', '#6ee7b7', '#fcd34d'], borderRadius: 4 }
+                    ]
+                },
+                options: { ...commonOptions, scales: { y: { beginAtZero: true, grid: { color: '#f5f5f4' } }, x: { grid: { display: false } } } }
+            });
+
+            new Chart(document.getElementById('dauTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['M1', 'M3', 'M5', 'M7', 'M9', 'M11', 'M12'],
+                    datasets: [
+                        { label: 'Kingshot',      data: [100, 300, 450, 500, 600, 620, 610], borderColor: '#f43f5e', tension: 0.4, borderWidth: 3, fill: false },
+                        { label: 'Clash Royale',  data: [100,  95,  90, 250, 220, 200, 190], borderColor: '#3b82f6', tension: 0.4, borderWidth: 3, fill: false },
+                        { label: 'Raid: SL',      data: [100, 105, 102, 108, 110, 105, 112], borderColor: '#10b981', tension: 0.4, borderWidth: 3, fill: false },
+                        { label: 'MapleStory',    data: [100, 500, 400, 300, 250, 220, 200], borderColor: '#f59e0b', tension: 0.4, borderWidth: 3, fill: false }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: { y: { grid: { color: '#f5f5f4' } }, x: { grid: { display: false } } },
+                    plugins: {
+                        ...commonOptions.plugins,
+                        tooltip: {
+                            ...commonOptions.plugins.tooltip,
+                            callbacks: {
+                                label: (ctx) => {
+                                    const suffix = ctx.dataset.label === 'Clash Royale' && ctx.dataIndex === 3 ? ' ← Chess Collab' : '';
+                                    return `${ctx.dataset.label}: ${ctx.parsed.y}${suffix}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('retentionChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 7', 'Day 14', 'Day 30'],
+                    datasets: [
+                        { label: 'Kingshot',     data: [35, 12,  8,  5], borderColor: '#f43f5e', tension: 0.3, borderWidth: 3, fill: false },
+                        { label: 'Clash Royale', data: [45, 25, 20, 15], borderColor: '#3b82f6', tension: 0.3, borderWidth: 3, fill: false },
+                        { label: 'Raid: SL',     data: [40, 20, 15, 12], borderColor: '#10b981', tension: 0.3, borderWidth: 3, fill: false },
+                        { label: 'MapleStory',   data: [50, 18, 10,  8], borderColor: '#f59e0b', tension: 0.3, borderWidth: 3, fill: false }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: { title: { display: true, text: 'Retention %' }, min: 0, max: 60, grid: { color: '#f5f5f4' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('unitEconChart'), {
+                type: 'bubble',
+                data: {
+                    datasets: [
+                        { label: 'Kingshot',     data: [{ x: 35, y:  90, r: 20 }], backgroundColor: 'rgba(244, 63, 94, 0.7)',  borderColor: '#f43f5e' },
+                        { label: 'Clash Royale', data: [{ x:  8, y: 120, r: 12 }], backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: '#3b82f6' },
+                        { label: 'Raid: SL',     data: [{ x: 25, y: 180, r: 25 }], backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: '#10b981' },
+                        { label: 'MapleStory',   data: [{ x:  4, y:  45, r:  8 }], backgroundColor: 'rgba(245, 158, 11, 0.7)', borderColor: '#f59e0b' }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        x: { title: { display: true, text: 'Est. CPI (USD)' }, grid: { color: '#f5f5f4' } },
+                        y: { title: { display: true, text: 'Payback Window (Days)' }, grid: { color: '#f5f5f4' } }
+                    },
+                    plugins: {
+                        ...commonOptions.plugins,
+                        tooltip: {
+                            ...commonOptions.plugins.tooltip,
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label} — CPI: $${ctx.raw.x}, Payback: ${ctx.raw.y}d`
+                            }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('creativeFormatChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Kingshot', 'Clash Royale', 'Raid: SL', 'MapleStory Idle'],
+                    datasets: [
+                        { label: 'High-Fidelity / CGI (%)',       data: [10, 40, 60,  5], backgroundColor: '#1c1917' },
+                        { label: 'Influencer / UGC (%)',           data: [35, 10, 30, 15], backgroundColor: '#78716c' },
+                        { label: 'Gameplay / Pseudo-Gameplay (%)', data: [50, 20, 10, 50], backgroundColor: '#d6d3d1' },
+                        { label: 'IP / Nostalgia (%)',             data: [ 5, 30,  0, 30], backgroundColor: '#f5f5f4', borderColor: '#d6d3d1', borderWidth: 1 }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { stacked: true, max: 100, grid: { color: '#f5f5f4' } },
+                        y: { stacked: true, grid: { display: false } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
