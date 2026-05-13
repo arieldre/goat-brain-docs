@@ -312,6 +312,24 @@
 
   .theme-toggle:hover { border-color: var(--accent); }
 
+  .page-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+  }
+  .nav-link {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-link:hover { border-color: var(--accent); color: var(--text); }
+  .nav-link.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
   @media (max-width: 600px) {
     .layer-body { grid-template-columns: 1fr; }
     .col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
@@ -562,16 +580,6 @@
       </h1>
     </div>
   </header>
-
-  <!-- COMPANY BRAIN — NEXT STAGE -->
-  <div class="next-stage-divider">
-    <span class="next-stage-label">Next Stage</span>
-  </div>
-
-  <div class="cb-header">
-    <h2>Company Brain</h2>
-    <p>One shared knowledge layer for the entire team — every session from every member compounds into a single queryable intelligence.</p>
-  </div>
 
   <!-- THE SHIFT -->
   <div class="cb-section-label">The Shift</div>
