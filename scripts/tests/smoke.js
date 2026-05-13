@@ -64,10 +64,10 @@ await check('PAIR-06', 'top_geos populated on >= 50% of indexed creatives', asyn
   return withGeos.length >= (res.matches || []).length * 0.5;
 });
 
-// PAIR-07: schema_version present on all results
-await check('PAIR-07', 'schema_version=1 on all results', async () => {
+// PAIR-07: schema_version present and >= 1 on all results
+await check('PAIR-07', 'schema_version present on all results', async () => {
   const res = await queryGame({}, 10);
-  return (res.matches || []).every(m => m.metadata?.schema_version === 1);
+  return (res.matches || []).every(m => m.metadata?.schema_version >= 1);
 });
 
 // PAIR-08: cohort isolation — AEO filter returns only AEO

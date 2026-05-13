@@ -10,7 +10,6 @@
 //   --json             output as JSON
 
 import { embedTexts, fetchVectors, queryVectors } from './lib/pinecone.js';
-import { buildTextChunk } from './lib/cohort.js';
 
 const STALE_DAYS = 14;
 

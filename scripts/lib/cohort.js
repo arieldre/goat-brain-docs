@@ -109,6 +109,22 @@ export function computeCohortStats(scored) {
   return stats;
 }
 
+// Extract the concept segment from a creative name like INV_UA_NOV25_Orphan_Creator_30s_...
+export function extractConcept(creativeName) {
+  const segs = creativeName.split(/[\s_]+/);
+  for (const s of segs) {
+    if (/^(INV|UH|SH|UA)$/i.test(s))         continue; // game / funnel prefix
+    if (/^[A-Za-z]{3}\d{2}$/.test(s))         continue; // NOV25, APR26
+    if (/^\d+s$/.test(s))                      continue; // 30s, 60s
+    if (/^\d+x\d+$/.test(s))                   continue; // 1080x1920
+    if (/^[A-Z]{2}-[A-Z0-9]/.test(s))          continue; // VD-8QSH… hashes
+    if (/^(ENG|RUS|001|002|003|\d{3})$/.test(s)) continue;
+    if (s.length < 3)                           continue;
+    return s;
+  }
+  return '';
+}
+
 export function buildTextChunk(c) {
   const spendTier  = c.spend >= 2000 ? 'high' : c.spend >= 300 ? 'medium' : 'low';
   const hookStr    = c.hook_rate != null
@@ -121,8 +137,13 @@ export function buildTextChunk(c) {
     ? (c.cpi_delta <= -20 ? 'top-quartile' : c.cpi_delta <= 0 ? 'above-avg' : c.cpi_delta <= 30 ? 'below-avg' : 'bottom-quartile')
     : 'unknown';
   const geoStr     = c.top_geos?.length ? `Primary geos: ${c.top_geos.join(', ')}.` : '';
+  const name       = c.creative_name || '';
+  const concept    = extractConcept(name);
+  const conceptStr = concept ? `Concept: ${concept}.` : '';
 
   return [
+    name ? `Creative: ${name}.` : '',
+    conceptStr,
     `${c.game.toUpperCase()} ${c.platform} ${c.objective} video creative.`,
     `Performance tier: ${c.performance_tier || 'unknown'}.`,
     hookStr,

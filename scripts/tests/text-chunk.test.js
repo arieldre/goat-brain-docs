@@ -1,9 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTextChunk } from '../lib/cohort.js';
+import { buildTextChunk, extractConcept } from '../lib/cohort.js';
 
 const base = {
   game: 'uh', platform: 'Android', objective: 'AEO',
+  creative_name: 'UH_UA_MAR26_SeasonLady_Creator_30s_1080x1920',
   performance_tier: 'TOP', is_winner: true,
   cpi: 2.5, cpi_delta: -30, median_cpi: 3.5,
   hook_rate: 0.13, hold_rate: 0.40,
@@ -61,5 +62,38 @@ describe('buildTextChunk', () => {
 
   it('high spend tier when spend >= 2000', () => {
     assert.ok(buildTextChunk({ ...base, spend: 2000 }).includes('Spend tier: high'));
+  });
+
+  it('includes creative_name when present', () => {
+    const t = buildTextChunk(base);
+    assert.ok(t.includes('Creative: UH_UA_MAR26_SeasonLady'));
+  });
+
+  it('includes extracted concept', () => {
+    const t = buildTextChunk(base);
+    assert.ok(t.includes('Concept: SeasonLady'));
+  });
+
+  it('omits Creative line when creative_name absent', () => {
+    const t = buildTextChunk({ ...base, creative_name: undefined });
+    assert.ok(!t.includes('Creative:'));
+  });
+});
+
+describe('extractConcept', () => {
+  it('extracts concept from INV name', () => {
+    assert.equal(extractConcept('INV_UA_NOV25_Orphan_OleksandrBabak_60s_1080x1920_VD-80QSHIPW-001-ENG-002'), 'Orphan');
+  });
+
+  it('extracts concept from UH name', () => {
+    assert.equal(extractConcept('UH_UA_MAR26_SeasonLady_Creator_30s_1080x1920'), 'SeasonLady');
+  });
+
+  it('extracts multi-word concept', () => {
+    assert.equal(extractConcept('INV_UA_APR26_ArenaProgression_Original_30s_1080x1920'), 'ArenaProgression');
+  });
+
+  it('returns empty string for unrecognized pattern', () => {
+    assert.equal(extractConcept(''), '');
   });
 });

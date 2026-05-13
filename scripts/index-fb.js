@@ -15,7 +15,7 @@ const FIELDS = [
 ].join(',');
 
 const EMBED_BATCH = 10; // Pinecone embed limit per request
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2; // v2: creative_name + concept added to text chunk
 
 // Pinecone requires ASCII-only IDs — replace en/em dash, strip remaining non-ASCII
 function sanitizeId(str) {
