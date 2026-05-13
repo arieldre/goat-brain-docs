@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Brain</title>
+<style>
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #7c3aed;
+    --accent-soft: #4c1d95;
+    --text: #e8e8e8;
+    --muted: #666;
+    --tag-bg: #1e1e2e;
+    --tag-text: #a78bfa;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --blue: #3b82f6;
+    --pink: #ec4899;
+    --teal: #14b8a6;
+    --orange: #f97316;
+    --code-bg: #111;
+    --example-bg: #0e0e0e;
+    --example-border: #222;
+    --example-text: #b0b0b0;
+    --file-pill-bg: #111;
+    --file-pill-border: #2a2a2a;
+    --file-pill-text: #ccc;
+    --connector-color: #333;
+    --cb-inner-bg: #111;
+    --cb-inner-border: #1e1e1e;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #e2e2e5;
+    --accent: #7c3aed;
+    --accent-soft: #ede9fe;
+    --text: #111111;
+    --muted: #9ca3af;
+    --tag-bg: #f3f0ff;
+    --tag-text: #6d28d9;
+    --green: #16a34a;
+    --amber: #d97706;
+    --blue: #2563eb;
+    --pink: #db2777;
+    --teal: #0d9488;
+    --orange: #ea580c;
+    --code-bg: #f0f0f3;
+    --example-bg: #f5f5f7;
+    --example-border: #e2e2e5;
+    --example-text: #444;
+    --file-pill-bg: #f0f0f3;
+    --file-pill-border: #d5d5da;
+    --file-pill-text: #333;
+    --connector-color: #c0c0c8;
+    --cb-inner-bg: #f5f5f7;
+    --cb-inner-border: #e2e2e5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 40px 24px 80px;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), #a855f7);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  h1 span { color: var(--muted); font-weight: 400; font-size: 16px; display: block; margin-top: 2px; }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .flow-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .flow-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid;
+  }
+
+  .flow-label { font-size: 10px; color: var(--muted); text-align: center; max-width: 60px; white-space: nowrap; }
+  .flow-arrow { color: var(--muted); font-size: 18px; margin-top: -20px; }
+
+  .layers { display: flex; flex-direction: column; gap: 16px; }
+
+  .layer {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--card);
+    transition: border-color 0.2s;
+  }
+
+  .layer:hover { border-color: #3a3a3a; }
+
+  .layer-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .layer-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .layer-title { font-size: 15px; font-weight: 600; }
+  .layer-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .layer-meta { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    white-space: nowrap;
+  }
+
+  .badge.green { background: #052e16; color: var(--green); }
+  .badge.amber { background: #1c1400; color: var(--amber); }
+  .badge.blue { background: #0c1a33; color: var(--blue); }
+  .badge.pink { background: #2d0a1a; color: var(--pink); }
+  .badge.teal { background: #021a18; color: var(--teal); }
+  .badge.orange { background: #1f0e00; color: var(--orange); }
+
+  .layer-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .col {
+    padding: 16px 20px;
+  }
+
+  .col:first-child { border-right: 1px solid var(--border); }
+
+  .col-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .file-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    background: var(--file-pill-bg);
+    border: 1px solid var(--file-pill-border);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin: 2px 2px 2px 0;
+    color: var(--file-pill-text);
+  }
+
+  .example-block {
+    background: var(--example-bg);
+    border: 1px solid var(--example-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    color: var(--example-text);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .example-block .k { color: #a78bfa; }
+  .example-block .v { color: #86efac; }
+  .example-block .c { color: #6b7280; }
+
+  .purpose-text {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.6;
+  }
+
+  .purpose-text strong { color: var(--text); }
+
+  .connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+    color: var(--connector-color);
+    font-size: 18px;
+  }
+
+  .flow-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-top: 32px;
+  }
+
+  .flow-section h3 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  .step-arrow {
+    color: #444;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-arrow.right { color: #6d28d9; }
+
+  .flow-step strong { color: var(--text); }
+  .flow-step code {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    background: #111;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #a78bfa;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .theme-toggle:hover { border-color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .layer-body { grid-template-columns: 1fr; }
+    .col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+    .flow { display: none; }
+  }
+
+  /* COMPANY BRAIN SECTION */
+  .next-stage-divider {
+    margin: 56px 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .next-stage-divider::before,
+  .next-stage-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #3a3a3a, transparent);
+  }
+
+  .next-stage-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #a855f7;
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.3);
+    padding: 5px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .cb-header { margin-bottom: 32px; }
+  .cb-header h2 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 40%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .cb-header p { font-size: 14px; color: #888; max-width: 560px; }
+
+  .cb-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .cb-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .cb-card.next {
+    border-color: rgba(168,85,247,0.4);
+    background: linear-gradient(135deg, #1a1a1a 0%, #1a1025 100%);
+  }
+
+  .cb-card-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .cb-card-sub { font-size: 11px; color: #666; margin-bottom: 12px; }
+
+  .cb-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid #222;
+    font-size: 12px;
+    color: #888;
+  }
+  .cb-item:last-child { border-bottom: none; }
+  .cb-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .cb-item strong { color: var(--text); }
+
+  .cb-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    margin-bottom: 14px;
+  }
+
+  .cb-arch-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 0;
+    align-items: center;
+  }
+
+  .cb-arch-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: #555;
+    text-align: right;
+    padding-right: 16px;
+  }
+
+  .cb-arch-nodes {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0 10px 16px;
+    border-left: 2px solid #2a2a2a;
+    flex-wrap: wrap;
+  }
+
+  .cb-node {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .cb-breakthroughs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .cb-breakthrough {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .cb-bt-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+
+  .cb-bt-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .cb-bt-desc { font-size: 12px; color: #888; line-height: 1.6; }
+
+  .council-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .council-voice {
+    padding: 8px 10px;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 8px;
+  }
+
+  .council-voice-name { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+  .council-voice-desc { font-size: 10px; color: #666; }
+
+  .cb-loop {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .cb-loop-steps {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    align-items: center;
+  }
+
+  .cb-loop-step { text-align: center; padding: 10px 4px; }
+
+  .cb-loop-box {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    margin: 0 auto 8px;
+    border: 2px solid;
+  }
+
+  .cb-loop-title { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+  .cb-loop-desc { font-size: 10px; color: #666; line-height: 1.5; }
+  .cb-loop-arrow { text-align: center; color: #333; font-size: 18px; }
+
+  .cb-build-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    margin-bottom: 10px;
+  }
+
+  .cb-build-num {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .cb-build-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .cb-build-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .cb-pill {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px; border: 1px solid;
+    margin-left: auto; flex-shrink: 0; align-self: flex-start;
+  }
+
+  @media (max-width: 600px) {
+    .cb-split { grid-template-columns: 1fr; }
+    .cb-breakthroughs { grid-template-columns: 1fr; }
+    .cb-loop-steps { display: none; }
+  }
+
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">Light</button>
+<div class="container">
+
+  <nav class="page-nav">
+    <a class="nav-link" href="/memory-system">6 Layers</a>
+    <a class="nav-link active" href="/company-brain">Company Brain</a>
+    <a class="nav-link" href="/knowledge">Knowledge Base</a>
+  </nav>
+
+  <header>
+    <div class="logo" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">CB</div>
+    <div>
+      <h1>Company Brain
+        <span>Shared knowledge layer â€” every session from every member compounds</span>
+      </h1>
+    </div>
+  </header>
+
+  <!-- COMPANY BRAIN — NEXT STAGE -->
+  <div class="next-stage-divider">
+    <span class="next-stage-label">Next Stage</span>
+  </div>
+
+  <div class="cb-header">
+    <h2>Company Brain</h2>
+    <p>One shared knowledge layer for the entire team — every session from every member compounds into a single queryable intelligence.</p>
+  </div>
+
+  <!-- THE SHIFT -->
+  <div class="cb-section-label">The Shift</div>
+  <div class="cb-split" style="margin-bottom:28px;">
+    <div class="cb-card">
+      <div class="cb-card-title">Today — Personal</div>
+      <div class="cb-card-sub">One person's memory</div>
+      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>Knowledge lives in <strong>one person's sessions</strong></div></div>
+      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>Other team members' discoveries <strong>never captured</strong></div></div>
+      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>Same mistake <strong>repeated across team</strong></div></div>
+      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>New hire must <strong>start from zero</strong></div></div>
+    </div>
+    <div class="cb-card next">
+      <div class="cb-card-title">Company Brain — Shared</div>
+      <div class="cb-card-sub">Every session, every member</div>
+      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>Every session from any member <strong>contributes automatically</strong></div></div>
+      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>One person learns — <strong>everyone benefits next session</strong></div></div>
+      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>BP hit once — <strong>nobody hits it twice</strong></div></div>
+      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>New hire gets <strong>full team history on day 1</strong></div></div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="cb-section-label" style="margin-bottom:14px;">Architecture</div>
+  <div style="display:flex;flex-direction:column;gap:0;margin-bottom:28px;">
+    <div class="cb-arch-row">
+      <div class="cb-arch-label">Contributors</div>
+      <div class="cb-arch-nodes" style="border-color:#3b82f6;">
+        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Ariel — UA</div>
+        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Saar — UA</div>
+        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Roy — UA</div>
+        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Mana Team</div>
+        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#60a5fa;">Claude agents (automated)</div>
+      </div>
+    </div>
+    <div class="cb-arch-row">
+      <div class="cb-arch-label">Index</div>
+      <div class="cb-arch-nodes" style="border-color:#22c55e;">
+        <div class="cb-node" style="background:#052e16;border-color:#22c55e;color:#86efac;">Pinecone — namespace: company-brain</div>
+        <div class="cb-node" style="background:#052e16;border-color:#22c55e;color:#86efac;">multilingual-e5-large</div>
+        <div class="cb-node" style="background:#052e16;border-color:#22c55e;color:#86efac;">auto-sync on session end</div>
+      </div>
+    </div>
+    <div class="cb-arch-row">
+      <div class="cb-arch-label">Retrieval</div>
+      <div class="cb-arch-nodes" style="border-color:#f59e0b;">
+        <div class="cb-node" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">top 4–8 hits per prompt</div>
+        <div class="cb-node" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">score threshold 0.72</div>
+        <div class="cb-node" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">auto-injected silently</div>
+      </div>
+    </div>
+    <div class="cb-arch-row">
+      <div class="cb-arch-label">Surfaces</div>
+      <div class="cb-arch-nodes" style="border-color:#ec4899;">
+        <div class="cb-node" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">Claude Code — all members</div>
+        <div class="cb-node" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">goat-mcp query tool</div>
+        <div class="cb-node" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">Slack bot (future)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIGGEST BREAKTHROUGHS -->
+  <div class="cb-section-label" style="margin-bottom:14px;">Biggest Breakthroughs</div>
+  <div class="cb-breakthroughs" style="margin-bottom:28px;">
+
+    <div class="cb-breakthrough" style="border-color:rgba(168,85,247,0.3);background:linear-gradient(135deg,#1a1a1a,#1a1025);">
+      <div class="cb-bt-tag" style="color:#a855f7;">The Council</div>
+      <div class="cb-bt-title">Ambiguous decisions get four independent voices</div>
+      <div class="cb-bt-desc" style="margin-bottom:10px;">When no clear winner exists, spawn four agents — each a different stance, minimal shared history to prevent anchoring. <strong style="color:var(--text)">Disagreement is the output.</strong></div>
+      <div class="council-grid">
+        <div class="council-voice">
+          <div class="council-voice-name" style="color:#a78bfa;">Architect</div>
+          <div class="council-voice-desc">Long-term correctness</div>
+        </div>
+        <div class="council-voice">
+          <div class="council-voice-name" style="color:#f87171;">Skeptic</div>
+          <div class="council-voice-desc">Failure modes</div>
+        </div>
+        <div class="council-voice">
+          <div class="council-voice-name" style="color:#34d399;">Pragmatist</div>
+          <div class="council-voice-desc">Fastest path to ship</div>
+        </div>
+        <div class="council-voice">
+          <div class="council-voice-name" style="color:#fbbf24;">Critic</div>
+          <div class="council-voice-desc">Edge cases missed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cb-breakthrough" style="border-color:rgba(34,197,94,0.3);background:linear-gradient(135deg,#1a1a1a,#0d1a0d);">
+      <div class="cb-bt-tag" style="color:#22c55e;">Semantic Memory</div>
+      <div class="cb-bt-title">Relevant context arrives before you ask</div>
+      <div class="cb-bt-desc">Every session auto-injects top 4 most relevant memories before Claude reads the first message. Score threshold 0.72. Context arrives silently. <strong style="color:var(--text)">Every session starts smarter than the last.</strong></div>
+    </div>
+
+    <div class="cb-breakthrough" style="border-color:rgba(20,184,166,0.3);background:linear-gradient(135deg,#1a1a1a,#0a1a18);">
+      <div class="cb-bt-tag" style="color:#14b8a6;">Skill Files</div>
+      <div class="cb-bt-title">Domain rules load when the keyword appears</div>
+      <div class="cb-bt-desc">Type "adset" — FB API gotchas load. Type "tROAS" — Google Ads rules load. No manual invocation. <strong style="color:var(--text)">Zero overhead. Zero forgetting.</strong></div>
+    </div>
+
+  </div>
+
+  <!-- SELF-LEARNING LOOP -->
+  <div class="cb-section-label" style="margin-bottom:14px;">The Self-Learning Loop</div>
+  <div class="cb-loop">
+    <div style="text-align:center;font-size:12px;color:#666;margin-bottom:20px;">Every session contributes to a compounding loop. More sessions = fewer mistakes = fewer tokens spent re-explaining known context.</div>
+    <div class="cb-loop-steps">
+      <div class="cb-loop-step">
+        <div class="cb-loop-box" style="background:#1a0a2e;border-color:#a855f7;color:#d8b4fe;">S</div>
+        <div class="cb-loop-title">Session</div>
+        <div class="cb-loop-desc">Work happens. Non-obvious thing encountered.</div>
+      </div>
+      <div class="cb-loop-arrow">&#8594;</div>
+      <div class="cb-loop-step">
+        <div class="cb-loop-box" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">T</div>
+        <div class="cb-loop-title">Trigger Test</div>
+        <div class="cb-loop-desc">"Would another engineer hit this?" If yes, promote.</div>
+      </div>
+      <div class="cb-loop-arrow">&#8594;</div>
+      <div class="cb-loop-step">
+        <div class="cb-loop-box" style="background:#052e16;border-color:#22c55e;color:#86efac;">BP</div>
+        <div class="cb-loop-title">Best Practice</div>
+        <div class="cb-loop-desc">Documented. Dated. Tagged. Never re-discovered.</div>
+      </div>
+      <div class="cb-loop-arrow">&#8594;</div>
+    </div>
+    <div class="cb-loop-steps" style="direction:rtl;margin-top:4px;">
+      <div class="cb-loop-step" style="direction:ltr;">
+        <div class="cb-loop-box" style="background:#1a0a2e;border-color:#a855f7;color:#d8b4fe;">S+</div>
+        <div class="cb-loop-title">Better Session</div>
+        <div class="cb-loop-desc">Mistake never made twice.</div>
+      </div>
+      <div class="cb-loop-arrow" style="direction:ltr;">&#8592;</div>
+      <div class="cb-loop-step" style="direction:ltr;">
+        <div class="cb-loop-box" style="background:#021a18;border-color:#14b8a6;color:#5eead4;">SK</div>
+        <div class="cb-loop-title">Skill File</div>
+        <div class="cb-loop-desc">5+ BPs in a domain — skill created. Auto-injects forever.</div>
+      </div>
+      <div class="cb-loop-arrow" style="direction:ltr;">&#8592;</div>
+      <div class="cb-loop-step" style="direction:ltr;">
+        <div class="cb-loop-box" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">QR</div>
+        <div class="cb-loop-title">Quarterly Review</div>
+        <div class="cb-loop-desc">Stale BPs archived. Contradictions merged.</div>
+      </div>
+      <div class="cb-loop-arrow" style="direction:ltr;">&#8592;</div>
+    </div>
+    <div style="margin-top:16px;padding:12px 16px;background:#111;border:1px solid #1e1e1e;border-radius:8px;text-align:center;font-size:12px;color:#777;">
+      <strong style="color:var(--text)">Company Brain multiplier:</strong> this loop runs across all members simultaneously. One person hits a trap — BP promoted — nobody else ever hits it. One discovery. Whole team benefits.
+    </div>
+  </div>
+
+  <!-- WHAT TO BUILD -->
+  <div class="cb-section-label" style="margin-bottom:14px;">What Needs to Be Built</div>
+
+  <div class="cb-build-item">
+    <div class="cb-build-num" style="background:#0c1a33;color:#3b82f6;">1</div>
+    <div>
+      <div class="cb-build-title">Shared Pinecone namespace</div>
+      <div class="cb-build-desc">Create <code style="font-size:10px;font-family:monospace;background:#111;padding:1px 5px;border-radius:4px;color:#a78bfa;">company-brain</code> namespace. Migrate Ariel's memory as seed. Configure all team members' Claude to write and read from it.</div>
+    </div>
+    <div class="cb-pill" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">infra</div>
+  </div>
+
+  <div class="cb-build-item">
+    <div class="cb-build-num" style="background:#1a0a2e;color:#a855f7;">2</div>
+    <div>
+      <div class="cb-build-title">Contribution schema</div>
+      <div class="cb-build-desc">Standard format — who wrote it, when, confidence level, game and platform scope. Prevents garbage entries from polluting shared knowledge.</div>
+    </div>
+    <div class="cb-pill" style="background:#1a0a2e;border-color:#a855f7;color:#d8b4fe;">design</div>
+  </div>
+
+  <div class="cb-build-item">
+    <div class="cb-build-num" style="background:#052e16;color:#22c55e;">3</div>
+    <div>
+      <div class="cb-build-title">Auto-sync hook for all team members</div>
+      <div class="cb-build-desc">Deploy same Stop hook Ariel has to Saar and Roy's Claude. Sessions auto-vectorize lessons. Zero friction — they just work normally.</div>
+    </div>
+    <div class="cb-pill" style="background:#052e16;border-color:#22c55e;color:#86efac;">automate</div>
+  </div>
+
+  <div class="cb-build-item">
+    <div class="cb-build-num" style="background:#1c1400;color:#f59e0b;">4</div>
+    <div>
+      <div class="cb-build-title">Competibot pipeline</div>
+      <div class="cb-build-desc">Wire Competibot alerts directly into the brain as structured entries. Competitor moves auto-captured without human effort.</div>
+    </div>
+    <div class="cb-pill" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">pipeline</div>
+  </div>
+
+  <div class="cb-build-item">
+    <div class="cb-build-num" style="background:#2d0a1a;color:#ec4899;">5</div>
+    <div>
+      <div class="cb-build-title">goat-mcp query tool</div>
+      <div class="cb-build-desc">Add <code style="font-size:10px;font-family:monospace;background:#111;padding:1px 5px;border-radius:4px;color:#a78bfa;">query_company_brain(query, domain?, game?)</code> to goat-mcp. Surfaces institutional knowledge inside any Claude session or dashboard query.</div>
+    </div>
+    <div class="cb-pill" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">tool</div>
+  </div>
+
+
+</div>
+
+
+</div>
+<script>
+  const root = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  function applyTheme(t) {
+    root.setAttribute('data-theme', t);
+    btn.textContent = t === 'light' ? 'Dark' : 'Light';
+    localStorage.setItem('theme', t);
+  }
+  function toggleTheme() { applyTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); }
+  applyTheme(saved);
+</script>
+</body>
+</html>

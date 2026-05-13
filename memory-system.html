@@ -540,12 +540,35 @@
     .cb-breakthroughs { grid-template-columns: 1fr; }
     .cb-loop-steps { display: none; }
   }
+  /* Page navigation */
+  .page-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+  }
+  .nav-link {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-link:hover { border-color: var(--accent); color: var(--text); }
+  .nav-link.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">Light</button>
 <div class="container">
 
+  <nav class="page-nav">
+    <a class="nav-link active" href="/memory-system">6 Layers</a>
+    <a class="nav-link" href="/company-brain">Company Brain</a>
+    <a class="nav-link" href="/knowledge">Knowledge Base</a>
+  </nav>
   <header>
     <div class="logo">MEM</div>
     <div>
@@ -835,217 +858,6 @@
       </div>
     </div>
   </div>
-
-
-  <!-- COMPANY BRAIN — NEXT STAGE -->
-  <div class="next-stage-divider">
-    <span class="next-stage-label">Next Stage</span>
-  </div>
-
-  <div class="cb-header">
-    <h2>Company Brain</h2>
-    <p>One shared knowledge layer for the entire team — every session from every member compounds into a single queryable intelligence.</p>
-  </div>
-
-  <!-- THE SHIFT -->
-  <div class="cb-section-label">The Shift</div>
-  <div class="cb-split" style="margin-bottom:28px;">
-    <div class="cb-card">
-      <div class="cb-card-title">Today — Personal</div>
-      <div class="cb-card-sub">One person's memory</div>
-      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>Knowledge lives in <strong>one person's sessions</strong></div></div>
-      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>Other team members' discoveries <strong>never captured</strong></div></div>
-      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>Same mistake <strong>repeated across team</strong></div></div>
-      <div class="cb-item"><div class="cb-dot" style="background:#ef4444"></div><div>New hire must <strong>start from zero</strong></div></div>
-    </div>
-    <div class="cb-card next">
-      <div class="cb-card-title">Company Brain — Shared</div>
-      <div class="cb-card-sub">Every session, every member</div>
-      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>Every session from any member <strong>contributes automatically</strong></div></div>
-      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>One person learns — <strong>everyone benefits next session</strong></div></div>
-      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>BP hit once — <strong>nobody hits it twice</strong></div></div>
-      <div class="cb-item"><div class="cb-dot" style="background:#22c55e"></div><div>New hire gets <strong>full team history on day 1</strong></div></div>
-    </div>
-  </div>
-
-  <!-- ARCHITECTURE -->
-  <div class="cb-section-label" style="margin-bottom:14px;">Architecture</div>
-  <div style="display:flex;flex-direction:column;gap:0;margin-bottom:28px;">
-    <div class="cb-arch-row">
-      <div class="cb-arch-label">Contributors</div>
-      <div class="cb-arch-nodes" style="border-color:#3b82f6;">
-        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Ariel — UA</div>
-        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Saar — UA</div>
-        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Roy — UA</div>
-        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">Mana Team</div>
-        <div class="cb-node" style="background:#0c1a33;border-color:#3b82f6;color:#60a5fa;">Claude agents (automated)</div>
-      </div>
-    </div>
-    <div class="cb-arch-row">
-      <div class="cb-arch-label">Index</div>
-      <div class="cb-arch-nodes" style="border-color:#22c55e;">
-        <div class="cb-node" style="background:#052e16;border-color:#22c55e;color:#86efac;">Pinecone — namespace: company-brain</div>
-        <div class="cb-node" style="background:#052e16;border-color:#22c55e;color:#86efac;">multilingual-e5-large</div>
-        <div class="cb-node" style="background:#052e16;border-color:#22c55e;color:#86efac;">auto-sync on session end</div>
-      </div>
-    </div>
-    <div class="cb-arch-row">
-      <div class="cb-arch-label">Retrieval</div>
-      <div class="cb-arch-nodes" style="border-color:#f59e0b;">
-        <div class="cb-node" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">top 4–8 hits per prompt</div>
-        <div class="cb-node" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">score threshold 0.72</div>
-        <div class="cb-node" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">auto-injected silently</div>
-      </div>
-    </div>
-    <div class="cb-arch-row">
-      <div class="cb-arch-label">Surfaces</div>
-      <div class="cb-arch-nodes" style="border-color:#ec4899;">
-        <div class="cb-node" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">Claude Code — all members</div>
-        <div class="cb-node" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">goat-mcp query tool</div>
-        <div class="cb-node" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">Slack bot (future)</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- BIGGEST BREAKTHROUGHS -->
-  <div class="cb-section-label" style="margin-bottom:14px;">Biggest Breakthroughs</div>
-  <div class="cb-breakthroughs" style="margin-bottom:28px;">
-
-    <div class="cb-breakthrough" style="border-color:rgba(168,85,247,0.3);background:linear-gradient(135deg,#1a1a1a,#1a1025);">
-      <div class="cb-bt-tag" style="color:#a855f7;">The Council</div>
-      <div class="cb-bt-title">Ambiguous decisions get four independent voices</div>
-      <div class="cb-bt-desc" style="margin-bottom:10px;">When no clear winner exists, spawn four agents — each a different stance, minimal shared history to prevent anchoring. <strong style="color:var(--text)">Disagreement is the output.</strong></div>
-      <div class="council-grid">
-        <div class="council-voice">
-          <div class="council-voice-name" style="color:#a78bfa;">Architect</div>
-          <div class="council-voice-desc">Long-term correctness</div>
-        </div>
-        <div class="council-voice">
-          <div class="council-voice-name" style="color:#f87171;">Skeptic</div>
-          <div class="council-voice-desc">Failure modes</div>
-        </div>
-        <div class="council-voice">
-          <div class="council-voice-name" style="color:#34d399;">Pragmatist</div>
-          <div class="council-voice-desc">Fastest path to ship</div>
-        </div>
-        <div class="council-voice">
-          <div class="council-voice-name" style="color:#fbbf24;">Critic</div>
-          <div class="council-voice-desc">Edge cases missed</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cb-breakthrough" style="border-color:rgba(34,197,94,0.3);background:linear-gradient(135deg,#1a1a1a,#0d1a0d);">
-      <div class="cb-bt-tag" style="color:#22c55e;">Semantic Memory</div>
-      <div class="cb-bt-title">Relevant context arrives before you ask</div>
-      <div class="cb-bt-desc">Every session auto-injects top 4 most relevant memories before Claude reads the first message. Score threshold 0.72. Context arrives silently. <strong style="color:var(--text)">Every session starts smarter than the last.</strong></div>
-    </div>
-
-    <div class="cb-breakthrough" style="border-color:rgba(20,184,166,0.3);background:linear-gradient(135deg,#1a1a1a,#0a1a18);">
-      <div class="cb-bt-tag" style="color:#14b8a6;">Skill Files</div>
-      <div class="cb-bt-title">Domain rules load when the keyword appears</div>
-      <div class="cb-bt-desc">Type "adset" — FB API gotchas load. Type "tROAS" — Google Ads rules load. No manual invocation. <strong style="color:var(--text)">Zero overhead. Zero forgetting.</strong></div>
-    </div>
-
-  </div>
-
-  <!-- SELF-LEARNING LOOP -->
-  <div class="cb-section-label" style="margin-bottom:14px;">The Self-Learning Loop</div>
-  <div class="cb-loop">
-    <div style="text-align:center;font-size:12px;color:#666;margin-bottom:20px;">Every session contributes to a compounding loop. More sessions = fewer mistakes = fewer tokens spent re-explaining known context.</div>
-    <div class="cb-loop-steps">
-      <div class="cb-loop-step">
-        <div class="cb-loop-box" style="background:#1a0a2e;border-color:#a855f7;color:#d8b4fe;">S</div>
-        <div class="cb-loop-title">Session</div>
-        <div class="cb-loop-desc">Work happens. Non-obvious thing encountered.</div>
-      </div>
-      <div class="cb-loop-arrow">&#8594;</div>
-      <div class="cb-loop-step">
-        <div class="cb-loop-box" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">T</div>
-        <div class="cb-loop-title">Trigger Test</div>
-        <div class="cb-loop-desc">"Would another engineer hit this?" If yes, promote.</div>
-      </div>
-      <div class="cb-loop-arrow">&#8594;</div>
-      <div class="cb-loop-step">
-        <div class="cb-loop-box" style="background:#052e16;border-color:#22c55e;color:#86efac;">BP</div>
-        <div class="cb-loop-title">Best Practice</div>
-        <div class="cb-loop-desc">Documented. Dated. Tagged. Never re-discovered.</div>
-      </div>
-      <div class="cb-loop-arrow">&#8594;</div>
-    </div>
-    <div class="cb-loop-steps" style="direction:rtl;margin-top:4px;">
-      <div class="cb-loop-step" style="direction:ltr;">
-        <div class="cb-loop-box" style="background:#1a0a2e;border-color:#a855f7;color:#d8b4fe;">S+</div>
-        <div class="cb-loop-title">Better Session</div>
-        <div class="cb-loop-desc">Mistake never made twice.</div>
-      </div>
-      <div class="cb-loop-arrow" style="direction:ltr;">&#8592;</div>
-      <div class="cb-loop-step" style="direction:ltr;">
-        <div class="cb-loop-box" style="background:#021a18;border-color:#14b8a6;color:#5eead4;">SK</div>
-        <div class="cb-loop-title">Skill File</div>
-        <div class="cb-loop-desc">5+ BPs in a domain — skill created. Auto-injects forever.</div>
-      </div>
-      <div class="cb-loop-arrow" style="direction:ltr;">&#8592;</div>
-      <div class="cb-loop-step" style="direction:ltr;">
-        <div class="cb-loop-box" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">QR</div>
-        <div class="cb-loop-title">Quarterly Review</div>
-        <div class="cb-loop-desc">Stale BPs archived. Contradictions merged.</div>
-      </div>
-      <div class="cb-loop-arrow" style="direction:ltr;">&#8592;</div>
-    </div>
-    <div style="margin-top:16px;padding:12px 16px;background:#111;border:1px solid #1e1e1e;border-radius:8px;text-align:center;font-size:12px;color:#777;">
-      <strong style="color:var(--text)">Company Brain multiplier:</strong> this loop runs across all members simultaneously. One person hits a trap — BP promoted — nobody else ever hits it. One discovery. Whole team benefits.
-    </div>
-  </div>
-
-  <!-- WHAT TO BUILD -->
-  <div class="cb-section-label" style="margin-bottom:14px;">What Needs to Be Built</div>
-
-  <div class="cb-build-item">
-    <div class="cb-build-num" style="background:#0c1a33;color:#3b82f6;">1</div>
-    <div>
-      <div class="cb-build-title">Shared Pinecone namespace</div>
-      <div class="cb-build-desc">Create <code style="font-size:10px;font-family:monospace;background:#111;padding:1px 5px;border-radius:4px;color:#a78bfa;">company-brain</code> namespace. Migrate Ariel's memory as seed. Configure all team members' Claude to write and read from it.</div>
-    </div>
-    <div class="cb-pill" style="background:#0c1a33;border-color:#3b82f6;color:#93c5fd;">infra</div>
-  </div>
-
-  <div class="cb-build-item">
-    <div class="cb-build-num" style="background:#1a0a2e;color:#a855f7;">2</div>
-    <div>
-      <div class="cb-build-title">Contribution schema</div>
-      <div class="cb-build-desc">Standard format — who wrote it, when, confidence level, game and platform scope. Prevents garbage entries from polluting shared knowledge.</div>
-    </div>
-    <div class="cb-pill" style="background:#1a0a2e;border-color:#a855f7;color:#d8b4fe;">design</div>
-  </div>
-
-  <div class="cb-build-item">
-    <div class="cb-build-num" style="background:#052e16;color:#22c55e;">3</div>
-    <div>
-      <div class="cb-build-title">Auto-sync hook for all team members</div>
-      <div class="cb-build-desc">Deploy same Stop hook Ariel has to Saar and Roy's Claude. Sessions auto-vectorize lessons. Zero friction — they just work normally.</div>
-    </div>
-    <div class="cb-pill" style="background:#052e16;border-color:#22c55e;color:#86efac;">automate</div>
-  </div>
-
-  <div class="cb-build-item">
-    <div class="cb-build-num" style="background:#1c1400;color:#f59e0b;">4</div>
-    <div>
-      <div class="cb-build-title">Competibot pipeline</div>
-      <div class="cb-build-desc">Wire Competibot alerts directly into the brain as structured entries. Competitor moves auto-captured without human effort.</div>
-    </div>
-    <div class="cb-pill" style="background:#1c1400;border-color:#f59e0b;color:#fcd34d;">pipeline</div>
-  </div>
-
-  <div class="cb-build-item">
-    <div class="cb-build-num" style="background:#2d0a1a;color:#ec4899;">5</div>
-    <div>
-      <div class="cb-build-title">goat-mcp query tool</div>
-      <div class="cb-build-desc">Add <code style="font-size:10px;font-family:monospace;background:#111;padding:1px 5px;border-radius:4px;color:#a78bfa;">query_company_brain(query, domain?, game?)</code> to goat-mcp. Surfaces institutional knowledge inside any Claude session or dashboard query.</div>
-    </div>
-    <div class="cb-pill" style="background:#2d0a1a;border-color:#ec4899;color:#f9a8d4;">tool</div>
-  </div>
-
 
 </div>
 <script>

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT Knowledge Base</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #7c3aed;
+    --accent-soft: #4c1d95;
+    --text: #e8e8e8;
+    --muted: #666;
+    --tag-bg: #1e1e2e;
+    --tag-text: #a78bfa;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --blue: #3b82f6;
+    --pink: #ec4899;
+    --teal: #14b8a6;
+    --orange: #f97316;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #e2e2e5;
+    --accent: #7c3aed;
+    --accent-soft: #ede9fe;
+    --text: #111111;
+    --muted: #9ca3af;
+    --tag-bg: #f3f0ff;
+    --tag-text: #6d28d9;
+    --green: #16a34a;
+    --amber: #d97706;
+    --blue: #2563eb;
+    --pink: #db2777;
+    --teal: #0d9488;
+    --orange: #ea580c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 40px 24px 80px;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 100;
+    transition: border-color 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+
+  .page-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+  }
+  .nav-link {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-link:hover { border-color: var(--accent); color: var(--text); }
+  .nav-link.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), #a855f7);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  h1 span { color: var(--muted); font-weight: 400; font-size: 15px; display: block; margin-top: 2px; }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Category sections */
+  .section { margin-bottom: 28px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .section-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .section-count {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* Entry grid */
+  .entries {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+
+  .entry {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .entry:hover { border-color: #3a3a3a; }
+  :root[data-theme="light"] .entry:hover { border-color: #c0c0cc; }
+
+  .entry-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .entry-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    margin-right: 4px;
+    margin-top: 6px;
+    white-space: nowrap;
+  }
+  .tag.green { background: #052e16; color: var(--green); }
+  .tag.blue  { background: #0c1a33; color: var(--blue); }
+  .tag.amber { background: #1c1400; color: var(--amber); }
+  .tag.pink  { background: #2d0a1a; color: var(--pink); }
+  .tag.teal  { background: #021a18; color: var(--teal); }
+  .tag.orange { background: #1f0e00; color: var(--orange); }
+  :root[data-theme="light"] .tag.green { background: #dcfce7; color: var(--green); }
+  :root[data-theme="light"] .tag.blue  { background: #dbeafe; color: var(--blue); }
+  :root[data-theme="light"] .tag.amber { background: #fef3c7; color: var(--amber); }
+  :root[data-theme="light"] .tag.pink  { background: #fce7f3; color: var(--pink); }
+  :root[data-theme="light"] .tag.teal  { background: #ccfbf1; color: var(--teal); }
+  :root[data-theme="light"] .tag.orange { background: #ffedd5; color: var(--orange); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+  }
+
+  /* Best practices block */
+  .bp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .bp-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: border-color 0.2s;
+  }
+  .bp-item:hover { border-color: #3a3a3a; }
+  :root[data-theme="light"] .bp-item:hover { border-color: #c0c0cc; }
+  .bp-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 42px;
+    padding-top: 1px;
+  }
+  .bp-domain {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .bp-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  footer {
+    margin-top: 60px;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">Light</button>
+
+<div class="container">
+
+<nav class="page-nav">
+  <a class="nav-link" href="/memory-system">6 Layers</a>
+  <a class="nav-link" href="/company-brain">Company Brain</a>
+  <a class="nav-link active" href="/knowledge">Knowledge Base</a>
+</nav>
+
+<header>
+  <div class="logo">KB</div>
+  <div>
+    <h1>GOAT Knowledge Base
+      <span>What's vectorized in the semantic memory index</span>
+    </h1>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">55+</div>
+    <div class="stat-label">Vectorized files</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">110</div>
+    <div class="stat-label">Best practices</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">5</div>
+    <div class="stat-label">Knowledge categories</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">2</div>
+    <div class="stat-label">Full game profiles</div>
+  </div>
+</div>
+
+<!-- Category 1: Game Profiles -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-dot" style="background: var(--pink);"></div>
+    <div class="section-title">Game Intelligence</div>
+    <div class="section-count">2 profiles</div>
+  </div>
+  <div class="entries">
+    <div class="entry">
+      <div class="entry-name">Urban Heat (UH)</div>
+      <div class="entry-desc">Competitive FPS hero shooter. 3 gangs, 30 characters, 33-gun gunsmith system. Global launch Nov 2025. 1M+ installs.</div>
+      <span class="tag pink">FPS</span>
+      <span class="tag">hero shooter</span>
+      <span class="tag blue">US target</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Invokers: Titan Legacy (INV)</div>
+      <div class="entry-desc">Action RPG / gacha. 200+ invokers, Titan transformation mechanic. Early access. iOS launched Apr 2026. 100K+ installs.</div>
+      <span class="tag amber">action RPG</span>
+      <span class="tag">gacha</span>
+      <span class="tag blue">US target</span>
+    </div>
+  </div>
+  <div class="entries" style="margin-top:10px">
+    <div class="entry">
+      <div class="entry-name">UH — Creative Brief</div>
+      <div class="entry-desc">Audience male 16-28. Top hooks: CODM-comparison, faction identity, gunplay POV. Anti-P2W + street culture. CTAs: "Crew Up Now" / "Pick Your Gang".</div>
+      <span class="tag pink">UH</span>
+      <span class="tag">creative</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">INV — Creative Brief</div>
+      <div class="entry-desc">Audience male 18-34. Top hook: Titan transformation first 5s. "Not your typical mobile RPG" positioning. CTAs: "Summon Now" / "Play Free".</div>
+      <span class="tag amber">INV</span>
+      <span class="tag">creative</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Player Vocabulary</div>
+      <div class="entry-desc">UH: "crew up / loadout / no bots / CODM alternative / which gang?". INV: "unleash / invoke / titan / billions of combinations / triple-A".</div>
+      <span class="tag">copy</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Churn Triggers</div>
+      <div class="entry-desc">UH: bot lobbies (fixed v5.17), rank imbalance. INV: server issues, gacha variance, late-game progression wall, slow communication.</div>
+      <span class="tag orange">risk</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Category 2: UA Domain Knowledge -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-dot" style="background: var(--blue);"></div>
+    <div class="section-title">UA Domain Knowledge</div>
+    <div class="section-count">14 reference files</div>
+  </div>
+  <div class="entries">
+    <div class="entry">
+      <div class="entry-name">Geo Market Tiers</div>
+      <div class="entry-desc">T1/T2/T3/T4 country classification. Per-region CPI/LTV/iOS-Android profile. China exclusion, localization rules.</div>
+      <span class="tag blue">geo</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Platform Algorithm Behavior</div>
+      <div class="entry-desc">FB learning phase (50 events/7d, reset triggers, CBO vs ABO). Google UAC exploration/exploitation. Learning Limited causes.</div>
+      <span class="tag blue">Facebook</span>
+      <span class="tag teal">Google</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Bid Strategy Decision Tree</div>
+      <div class="entry-desc">FB (Lowest Cost / Bid Cap / Cost Cap / ROAS). Google (Maximize / tCPA / tROAS). CBO vs ABO rules. API gotchas.</div>
+      <span class="tag">bidding</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">iOS Privacy & SKAN</div>
+      <div class="entry-desc">ATT opt-in mechanics. SKAN 3 vs 4 differences. Conversion value config, null postbacks, modeling vs deterministic attribution.</div>
+      <span class="tag amber">iOS</span>
+      <span class="tag">SKAN</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Attribution Windows</div>
+      <div class="entry-desc">FB 7d click / 1d view defaults. Google 30d click. AF as source of truth. 20-40% self-reported discrepancy. SKAN timing.</div>
+      <span class="tag">attribution</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">UA Metrics Glossary</div>
+      <div class="entry-desc">IPM / CTR / CVR / CPI / ROAS / LTV / retention definitions + benchmarks by genre tier. Cohort comparison rules.</div>
+      <span class="tag green">metrics</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Creative Format Specs</div>
+      <div class="entry-desc">Aspect ratios (9:16 / 1:1 / 16:9). Video duration benchmarks. File limits. Playable specs. Per-platform algorithm preference.</div>
+      <span class="tag">creative</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Creative Concept Taxonomy</div>
+      <div class="entry-desc">Hook types: gameplay / FOMO / social proof / UGC / character / challenge. 3s hook window. Resonance by region. CTA standards.</div>
+      <span class="tag">creative</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Creative Research Workflow</div>
+      <div class="entry-desc">Meta Ad Library + SensorTower step-by-step. Top competitor targets for INV and UH. Winning vs testing creative signals.</div>
+      <span class="tag">research</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Player LTV Distribution</div>
+      <div class="entry-desc">Whale / dolphin / minnow splits. Whale geo density (JP highest). Paying rate benchmarks. UA targeting implications.</div>
+      <span class="tag green">LTV</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">UA Seasonal Calendar</div>
+      <div class="entry-desc">Q4 CPI spike +40-80%. January dip (cheapest). Regional events: CNY / Ramadan / Diwali / Golden Week. Q4 strategy tradeoffs.</div>
+      <span class="tag amber">seasonal</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Gaming Genre Taxonomy</div>
+      <div class="entry-desc">Hypercasual vs casual vs mid-core strategy vs RPG vs core. UA metrics per genre. INV / UH classification. Never compare IPM across genres.</div>
+      <span class="tag">genre</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Competitor Landscape</div>
+      <div class="entry-desc">Supercell / Scopely / Plarium / Lilith UA patterns. Testing vs scaling signals. Meta Ad Library research. CPM impact of major launches.</div>
+      <span class="tag orange">competitive</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">AppsFlyer Attribution Logic</div>
+      <div class="entry-desc">Last-click hierarchy, organic definition, AF-to-FB postback flow, Protect360 fraud, discrepancy causes, cost data timing.</div>
+      <span class="tag teal">AF</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Category 3: API References -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-dot" style="background: var(--teal);"></div>
+    <div class="section-title">API Action References</div>
+    <div class="section-count">4 live-tested APIs</div>
+  </div>
+  <div class="entries">
+    <div class="entry">
+      <div class="entry-name">Google Ads API</div>
+      <div class="entry-desc">All live-tested mutations: tCPA bid, budget update, video pause/resume, UAC campaign create/remove. UH + INV campaign IDs included.</div>
+      <span class="tag teal">Google</span>
+      <span class="tag green">live-tested</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Facebook Marketing API</div>
+      <div class="entry-desc">Campaign create (OUTCOME_APP_PROMOTION), archive, pause/resume ad. Flexible ad asset_feed_spec rules. UH + INV ad account IDs.</div>
+      <span class="tag blue">Facebook</span>
+      <span class="tag green">live-tested</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">AppLovin UA API</div>
+      <div class="entry-desc">Reporting (r.applovin.com) + Campaign Management (api.ads.axon.ai) endpoints. Auth, gotchas, field formats.</div>
+      <span class="tag orange">AppLovin</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Unity Ads / LevelPlay API</div>
+      <div class="entry-desc">iAds sunset Apr 30 2026. Stats API (CSV). Unity Management API auth. ironSource historical reporting.</div>
+      <span class="tag amber">Unity</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Category 4: Project State -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-dot" style="background: var(--green);"></div>
+    <div class="section-title">Active Projects</div>
+    <div class="section-count">11 projects</div>
+  </div>
+  <div class="entries">
+    <div class="entry">
+      <div class="entry-name">GOAT UA Activity Dashboard</div>
+      <div class="entry-desc">Next.js 16 UA analytics. AF cohort pipeline, dual-window ROAS, Zustand stores. Deployed on Vercel.</div>
+      <span class="tag green">live</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Google Ads x AF Daily Report</div>
+      <div class="entry-desc">n8n workflow: GAQL queries, AF Pull API, Slack report. Daily automated UA summary.</div>
+      <span class="tag green">live</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Creative Dashboard</div>
+      <div class="entry-desc">AF MCP pipeline, Pinecone creative vectorization, comparison tooling. Multi-game (UH/INV/SH).</div>
+      <span class="tag green">live</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Urban Heat Tracker</div>
+      <div class="entry-desc">React+Vite. Google + FB tracking for UH + INV. KV-backed analytics. Password gate. Vercel Pro.</div>
+      <span class="tag green">live</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Hermes Agents (aBot)</div>
+      <div class="entry-desc">UA intelligence suite. 3 agents, 2 games. Deployed on Fly.io (goat-abot). Slack Socket Mode.</div>
+      <span class="tag green">live</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Competibot</div>
+      <div class="entry-desc">Competitor monitor Telegram bot. SensorTower + Firecrawl + TikTok. Fly.io (goat-competitor-monitor).</div>
+      <span class="tag green">live</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">GOAT MCP Server</div>
+      <div class="entry-desc">MCP server for Claude. FB + Google Ads analysis tools. Google Drive integration. Multi-game.</div>
+      <span class="tag teal">MCP</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">UA Analytics Database</div>
+      <div class="entry-desc">Supabase schema for all UA metrics. App IDs, design decisions, schema location documented.</div>
+      <span class="tag teal">Supabase</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Gesher</div>
+      <div class="entry-desc">SvelteKit 5 + Supabase video-call app. WebRTC peer connections, match engine.</div>
+      <span class="tag amber">in progress</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Persona Platform</div>
+      <div class="entry-desc">AI persona SaaS rebuild. Next.js + Supabase + Better Auth. 8-phase roadmap. Employee-to-persona matching.</div>
+      <span class="tag amber">in progress</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">FurnishAI</div>
+      <div class="entry-desc">Furniture marketplace. Phase 10 pending. CONNECTIONS.md has unresolved dependency gates.</div>
+      <span class="tag orange">blocked</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Category 5: Best Practices -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-dot" style="background: var(--amber);"></div>
+    <div class="section-title">Best Practices</div>
+    <div class="section-count">110 entries across 18 domains</div>
+  </div>
+  <div class="bp-grid">
+    <div class="bp-item">
+      <div class="bp-num">BP 104–110</div>
+      <div>
+        <div class="bp-domain">Facebook Ads / Meta API</div>
+        <div class="bp-sub">Flex ad rules, insights breakdowns, bid strategy, video delete, rate limits</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 039–066</div>
+      <div>
+        <div class="bp-domain">Google Ads / GAQL</div>
+        <div class="bp-sub">tCPA/tROAS mutations, asset view metrics, UAC create, partialFailureError</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 100–102</div>
+      <div>
+        <div class="bp-domain">Pinecone / Vector DB</div>
+        <div class="bp-sub">Standard dense index, asymmetric embeddings, sync-state reset</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 105</div>
+      <div>
+        <div class="bp-domain">Creative Intel</div>
+        <div class="bp-sub">Game prefix required in vector key — names collide across games</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 106–107</div>
+      <div>
+        <div class="bp-domain">MCP Server</div>
+        <div class="bp-sub">Accept header required, one McpServer per session, factory pattern</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 047–048</div>
+      <div>
+        <div class="bp-domain">AppsFlyer</div>
+        <div class="bp-sub">KV cache, missing cost/spend, Pull API vs MCP</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 031–044</div>
+      <div>
+        <div class="bp-domain">Auth / Better Auth</div>
+        <div class="bp-sub">Vercel cold start, forgot-password, JWT truncation</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 077–083</div>
+      <div>
+        <div class="bp-domain">Prisma / Neon</div>
+        <div class="bp-sub">Prisma 7 adapter, circular FK, schema changes, one-shot inline ops</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 003–021</div>
+      <div>
+        <div class="bp-domain">Supabase</div>
+        <div class="bp-sub">RLS INSERT/SELECT split, pooler region, aspirational types</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 009–025</div>
+      <div>
+        <div class="bp-domain">Next.js / Vercel</div>
+        <div class="bp-sub">Server actions, dynamic routes, VITE_ bake-at-build, printf env add</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 001–027</div>
+      <div>
+        <div class="bp-domain">SvelteKit</div>
+        <div class="bp-sub">Load function patterns, WebRTC ICE restart, cross-user Supabase reads</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 055–056</div>
+      <div>
+        <div class="bp-domain">Security</div>
+        <div class="bp-sub">GDPR export allowlist, LLM history sanitization, IDOR prevention</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 035–036</div>
+      <div>
+        <div class="bp-domain">Vercel AI SDK</div>
+        <div class="bp-sub">Streaming, useChat, maxTokens</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 091–097</div>
+      <div>
+        <div class="bp-domain">Scraping</div>
+        <div class="bp-sub">Scrapling anti-detect, Israeli classifieds, Facebook group cookies</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 072–074</div>
+      <div>
+        <div class="bp-domain">Fly.io / Google Drive</div>
+        <div class="bp-sub">Volumes, SSH, persistent data, OAuth token exchange</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 049–051</div>
+      <div>
+        <div class="bp-domain">LLM / AI</div>
+        <div class="bp-sub">LLM grading, G-Eval rubrics, Groq chat, persona roleplay</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 076–081</div>
+      <div>
+        <div class="bp-domain">WhatsApp / Slack</div>
+        <div class="bp-sub">Baileys bridge, Socket Mode setup, workspace user IDs</div>
+      </div>
+    </div>
+    <div class="bp-item">
+      <div class="bp-num">BP 093–094</div>
+      <div>
+        <div class="bp-domain">JavaScript</div>
+        <div class="bp-sub">Nullable reduce coercion, YouTube playlist pagination</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Part of the GOAT memory system &mdash; <a href="/memory-system">architecture</a>
+  &nbsp;&middot;&nbsp; Pinecone namespace: <code>claude-memory</code>
+  &nbsp;&middot;&nbsp; Updated per session
+</footer>
+
+</div>
+
+<script>
+  const root = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  function applyTheme(t) {
+    root.setAttribute('data-theme', t);
+    btn.textContent = t === 'light' ? 'Dark' : 'Light';
+    localStorage.setItem('theme', t);
+  }
+  function toggleTheme() {
+    applyTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+  }
+  applyTheme(saved);
+</script>
+</body>
+</html>
