@@ -15,9 +15,15 @@ export function geoTier(countryCode) {
 }
 
 export function buildCpiProfile(countryBreakdown) {
-  // Fixed-dimension vector: one slot per Tier1+Tier2 country, 0 if no data
+  // Fixed-dimension vector: one slot per Tier1+Tier2 country
+  // 0 = ran in this market but no installs; absent key = never ran there (also 0 for now)
+  // Use installs>0 guard so zero-install markets don't masquerade as absent ones
   const countries = [...GEO_MAP.tier1, ...GEO_MAP.tier2];
-  return countries.map(c => countryBreakdown[c]?.cpi || 0);
+  return countries.map(c => {
+    const d = countryBreakdown[c];
+    if (!d || d.installs <= 0) return 0;
+    return d.cpi || 0;
+  });
 }
 
 export function cosineSimilarity(a, b) {

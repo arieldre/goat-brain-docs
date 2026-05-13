@@ -23,6 +23,7 @@ async function withRetry(fn, label) {
     try {
       return await fn();
     } catch (err) {
+      // Auth errors (code=190/102) do NOT match this pattern — they throw immediately. Intentional.
       const retryable = /17|32|613|rate|limit/i.test(err.message);
       if (!retryable || attempt === MAX_RETRIES) throw err;
       const wait = Math.pow(2, attempt) * 1000;
@@ -32,25 +33,31 @@ async function withRetry(fn, label) {
   }
 }
 
-function cacheKey(game, since) {
-  return join(CACHE_DIR, `geo-${game}-${since}.json`);
+function cacheKey(game, since, until) {
+  return join(CACHE_DIR, `geo-${game}-${since}-${until}.json`);
 }
 
 function loadCache(path) {
   try {
     const raw = JSON.parse(readFileSync(path, 'utf8'));
     if (Date.now() - raw.ts < CACHE_TTL) return raw.data;
-  } catch (_) {}
+  } catch (err) {
+    if (err.code !== 'ENOENT') console.warn(`  [cache] load failed (${err.code}): ${err.message}`);
+  }
   return null;
 }
 
 function saveCache(path, data) {
-  mkdirSync(CACHE_DIR, { recursive: true });
-  writeFileSync(path, JSON.stringify({ ts: Date.now(), data }));
+  try {
+    mkdirSync(CACHE_DIR, { recursive: true });
+    writeFileSync(path, JSON.stringify({ ts: Date.now(), data }));
+  } catch (err) {
+    console.warn(`  [cache] write failed — continuing without cache: ${err.message}`);
+  }
 }
 
 async function fetchGeoInsights(game, since, until) {
-  const ckPath  = cacheKey(game, since);
+  const ckPath  = cacheKey(game, since, until);
   const cached  = loadCache(ckPath);
   if (cached) {
     console.log(`  [cache] using cached geo data for ${game} from ${since}`);
@@ -135,6 +142,9 @@ async function run() {
   // 2. Get indexed creative list from Pinecone
   console.log('  [pinecone] fetching indexed creatives...');
   const indexed = await getIndexedCreatives(game);
+  if (indexed.length >= 1000) {
+    console.warn(`  [pinecone] WARNING: fetched 1000 results — may be truncated. Index may have >1000 creatives for game=${game}.`);
+  }
   const toUpdate = creative
     ? indexed.filter(c => c.creative_name === creative)
     : indexed;

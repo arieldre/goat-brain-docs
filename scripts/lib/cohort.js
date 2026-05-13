@@ -63,21 +63,23 @@ export function scoreCreatives(creatives) {
 
   const cpis      = creatives.map(c => c.cpi).filter(v => v !== null);
   const ctrs      = creatives.map(c => c.ctr);
-  const hookRates = creatives.map(c => c.hook_rate || 0);
-  const holdRates = creatives.map(c => c.hold_rate || 0);
+  // Only include non-null hook/hold in distribution — nulls must not drag z-scores (BP-093)
+  const hookRates = creatives.map(c => c.hook_rate).filter(v => v !== null);
+  const holdRates = creatives.map(c => c.hold_rate).filter(v => v !== null);
   const med       = median(cpis);
-  const anyRetention = creatives.some(c => (c.hook_rate || 0) > 0);
-  const [wCpi, wCtr, wHook, wHold] = anyRetention
-    ? [0.50, 0.20, 0.15, 0.15]
-    : [0.70, 0.30, 0.00, 0.00];
 
   return creatives.map(c => {
     if (!c.cpi) return { ...c, efficiency_score: null, _insufficientData: true };
+    // Per-creative weight: use retention weights only when THIS creative has video data
+    const hasRetention = c.hook_rate !== null && c.hold_rate !== null;
+    const [wCpi, wCtr, wHook, wHold] = hasRetention && hookRates.length >= 3
+      ? [0.50, 0.20, 0.15, 0.15]
+      : [0.70, 0.30, 0.00, 0.00];
     const composite =
-      -zscore(cpis,      c.cpi)          * wCpi +
-       zscore(ctrs,      c.ctr)          * wCtr +
-       zscore(hookRates, c.hook_rate||0) * wHook +
-       zscore(holdRates, c.hold_rate||0) * wHold;
+      -zscore(cpis,      c.cpi)                        * wCpi +
+       zscore(ctrs,      c.ctr)                        * wCtr +
+       zscore(hookRates, hasRetention ? c.hook_rate : 0) * wHook +
+       zscore(holdRates, hasRetention ? c.hold_rate : 0) * wHold;
     return {
       ...c,
       efficiency_score: Math.round(Math.max(0, Math.min(100, 50 + composite * 20))),

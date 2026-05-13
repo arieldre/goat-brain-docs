@@ -47,6 +47,7 @@ export async function queryVectors(vector, filter = {}, topK = 10) {
       topK,
       namespace: NAMESPACE,
       includeMetadata: true,
+      includeValues: true,
     }),
   });
   if (!res.ok) throw new Error(`Pinecone query failed: ${res.status} ${await res.text()}`);

@@ -50,16 +50,19 @@ function dedupeByBase(parsed) {
     const base = adBaseName(ad.ad_name);
     const key  = `${base}|${ad.platform}|${ad.objective}`;
     if (!byKey.has(key)) {
-      byKey.set(key, { ...ad, creative_name: base, _count: 1 });
+      byKey.set(key, { ...ad, creative_name: base, _count: 1, _retentionImp: ad.retention ? ad.impressions : 0 });
     } else {
       const e = byKey.get(key);
-      e.spend      += ad.spend;
+      e.spend       += ad.spend;
       e.impressions += ad.impressions;
-      e.clicks     += ad.clicks;
-      e.installs   += ad.installs;
+      e.clicks      += ad.clicks;
+      e.installs    += ad.installs;
       e._count++;
-      // keep retention from whichever ad has the most impressions
-      if (!e.retention && ad.retention) e.retention = ad.retention;
+      // keep retention from the highest-impression ad (FB pagination order not guaranteed)
+      if (ad.retention && ad.impressions > e._retentionImp) {
+        e.retention     = ad.retention;
+        e._retentionImp = ad.impressions;
+      }
     }
   }
   return [...byKey.values()];
@@ -172,17 +175,26 @@ async function run() {
     return;
   }
 
+  if (!toIndex.length) {
+    console.log(`\nAll ${tiered.length} creatives are LOW confidence — nothing to index.`);
+    return;
+  }
+
   // 8. Embed in batches of EMBED_BATCH
   console.log('\nEmbedding and upserting...');
-  let upserted = 0, skipped = 0, errors = 0;
+  let upserted = 0, errors = 0;
 
   for (let i = 0; i < toIndex.length; i += EMBED_BATCH) {
-    const batch     = toIndex.slice(i, i + EMBED_BATCH);
-    const texts     = batch.map(buildTextChunk);
+    const batch = toIndex.slice(i, i + EMBED_BATCH);
+    const texts = batch.map(buildTextChunk);
 
     let vectors;
     try {
       vectors = await embedTexts(texts, 'passage'); // BP-101: passage for indexing
+      // Guard: Pinecone must return same count as sent — partial response = wrong vector assignments
+      if (vectors.length !== batch.length) {
+        throw new Error(`Embed count mismatch: sent ${batch.length}, got ${vectors.length}`);
+      }
     } catch (err) {
       console.error(`  [embed error] batch ${i}–${i + batch.length}: ${err.message}`);
       errors += batch.length;
@@ -198,11 +210,11 @@ async function run() {
         platform:         c.platform,
         objective:        c.objective,
         source:           'fb',
-        cpi:              c.cpi,
+        cpi:              c.cpi ?? undefined,
         ctr:              +c.ctr.toFixed(4),
-        hook_rate:        c.hook_rate,
-        hold_rate:        c.hold_rate,
-        efficiency_score: c.efficiency_score,
+        hook_rate:        c.hook_rate ?? undefined,   // omit null — Pinecone serializes null as "null" string
+        hold_rate:        c.hold_rate ?? undefined,
+        efficiency_score: c.efficiency_score ?? undefined,
         spend:            c.spend,
         installs:         c.installs,
         performance_tier: c.performance_tier,
@@ -225,9 +237,10 @@ async function run() {
     }
   }
 
-  console.log(`\n\n✓ Done: ${upserted} vectors upserted to marketing-creatives`);
-  if (skipped) console.log(`  Skipped: ${skipped}`);
-  if (errors)  console.log(`  Errors: ${errors}`);
+  const allFailed = upserted === 0 && errors > 0;
+  console.log(`\n\n${allFailed ? '✗ FAILED' : '✓ Done'}: ${upserted} vectors upserted to marketing-creatives`);
+  if (errors) console.log(`  Errors: ${errors}`);
+  if (allFailed) process.exit(1);
 
   // Summary table
   const winners = tiered.filter(c => c.is_winner);
