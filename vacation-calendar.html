@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌴 חופשות המשפחה</title>
+  <style>
+    :root {
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --today-bg: #fffbeb;
+      --today-ring: #f59e0b;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --danger: #ef4444;
+      --input-bg: #f8fafc;
+      --chip-text: #ffffff;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.12);
+      --radius: 10px;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #334155;
+      --today-bg: #3a1c00;
+      --today-ring: #f59e0b;
+      --input-bg: #0f172a;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.25);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.4);
+    }
+
+    *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      transition: background .2s, color .2s;
+      font-size: 15px;
+    }
+
+    /* ─── Setup Screen ─────────────────────────────────── */
+    #setup-screen {
+      max-width: 540px;
+      margin: 3rem auto;
+      padding: 2rem 1.75rem;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      direction: ltr;
+    }
+    #setup-screen .setup-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    #setup-screen h2 { color: var(--accent); margin-bottom: .6rem; font-size: 1.3rem; }
+    #setup-screen p { color: var(--muted); line-height: 1.6; margin-bottom: 1rem; font-size: .9rem; }
+    #setup-screen ol { padding-left: 1.4rem; line-height: 2.2; font-size: .9rem; color: var(--text); }
+    #setup-screen ol a { color: var(--accent); }
+    #setup-screen pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1rem 1.2rem;
+      border-radius: 8px;
+      font-size: .78rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      line-height: 1.7;
+    }
+    #setup-screen .setup-note {
+      margin-top: 1.2rem;
+      padding: .85rem 1rem;
+      background: #eff6ff;
+      border-radius: 8px;
+      font-size: .85rem;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    [data-theme="dark"] #setup-screen .setup-note {
+      background: #1e3a5f;
+      color: #93c5fd;
+      border-color: #1d4ed8;
+    }
+
+    /* ─── App Shell ────────────────────────────────────── */
+    #app { display: flex; flex-direction: column; min-height: 100dvh; }
+
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .logo { font-size: 1.1rem; font-weight: 800; letter-spacing: -.01em; }
+    .logo span { color: var(--accent); }
+    .theme-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: .35rem .6rem;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--text);
+      transition: background .15s, border-color .15s;
+      line-height: 1;
+    }
+    .theme-btn:hover { background: var(--border); }
+
+    /* ─── Month Navigation ─────────────────────────────── */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1rem .6rem;
+      gap: .5rem;
+    }
+    #month-title {
+      flex: 1;
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .nav-btn {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: .95rem;
+      color: var(--text);
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .nav-btn:hover { background: var(--border); }
+
+    /* ─── Calendar ─────────────────────────────────────── */
+    .cal-wrap { padding: 0 .6rem .75rem; }
+
+    .cal-day-headers {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+    .cal-day-hdr {
+      text-align: center;
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--muted);
+      padding: .3rem 0;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .cal-cell {
+      background: var(--card);
+      border-radius: 6px;
+      min-height: 68px;
+      padding: .28rem .22rem .22rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .cal-cell.empty { background: transparent; pointer-events: none; }
+    .cal-cell.today {
+      background: var(--today-bg);
+      outline: 2px solid var(--today-ring);
+      outline-offset: -1px;
+    }
+    .day-num {
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--muted);
+      line-height: 1;
+      margin-bottom: .22rem;
+    }
+    .cal-cell.today .day-num { color: var(--today-ring); font-weight: 800; }
+    .vac-chip {
+      display: block;
+      font-size: .58rem;
+      font-weight: 700;
+      color: var(--chip-text);
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.5;
+    }
+    .vac-more {
+      font-size: .55rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ─── Add Button ───────────────────────────────────── */
+    .add-wrap { padding: .6rem 1rem 1rem; }
+    .add-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: .8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+    }
+    .add-btn:hover { background: var(--accent-hover); }
+    .add-btn:active { transform: scale(.98); }
+
+    /* ─── Vacation List ────────────────────────────────── */
+    .list-wrap { padding: 0 1rem 3rem; }
+    .list-section-title {
+      font-size: .72rem;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: .75rem;
+    }
+    .vac-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: .9rem 1rem;
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .vac-color-bar {
+      width: 4px;
+      border-radius: 4px;
+      align-self: stretch;
+      flex-shrink: 0;
+      min-height: 40px;
+    }
+    .vac-info { flex: 1; min-width: 0; }
+    .vac-name {
+      font-weight: 800;
+      font-size: .95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: .15rem;
+    }
+    .vac-dates { font-size: .78rem; color: var(--muted); }
+    .vac-notes {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: .3rem;
+      white-space: pre-wrap;
+      font-style: italic;
+      line-height: 1.4;
+    }
+    .del-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1rem;
+      padding: .25rem;
+      border-radius: 6px;
+      transition: color .15s, background .15s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .del-btn:hover { color: var(--danger); background: #fee2e2; }
+    [data-theme="dark"] .del-btn:hover { background: #450a0a; }
+    .empty-msg {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--muted);
+      line-height: 2;
+    }
+    .empty-msg .empty-icon { font-size: 2.5rem; display: block; margin-bottom: .5rem; }
+
+    /* ─── Modal ────────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 200;
+      padding: 1.25rem;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .modal-overlay.open { display: flex; animation: fade-in .15s ease; }
+    @media (min-width: 560px) {
+      .modal-overlay { align-items: center; }
+    }
+    @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+
+    .modal {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 1.5rem 1.5rem 1.75rem;
+      width: 100%;
+      max-width: 460px;
+      animation: slide-up .2s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: var(--shadow-md);
+    }
+    @keyframes slide-up {
+      from { transform: translateY(24px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .modal-title { font-size: 1.1rem; font-weight: 800; }
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--muted);
+      line-height: 1;
+      padding: .2rem;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .form-field { margin-bottom: .9rem; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: .9rem; }
+    label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: .35rem;
+      letter-spacing: .01em;
+    }
+    input[type=text], input[type=date], textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: .6rem .85rem;
+      font-size: .92rem;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      transition: border-color .15s;
+    }
+    input[type=text]:focus, input[type=date]:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+    textarea { resize: vertical; min-height: 72px; }
+
+    .field-err {
+      font-size: .76rem;
+      color: var(--danger);
+      margin-top: .3rem;
+      display: none;
+    }
+    .field-err.show { display: block; }
+    input.invalid, textarea.invalid { border-color: var(--danger); }
+
+    .modal-actions { display: flex; gap: .65rem; margin-top: 1.25rem; }
+    .btn-primary {
+      flex: 1;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .7rem 1rem;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+      font-family: inherit;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: .7rem 1rem;
+      font-size: .95rem;
+      cursor: pointer;
+      color: var(--text);
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: var(--border); }
+
+    /* ─── Responsive ───────────────────────────────────── */
+    @media (min-width: 640px) {
+      .cal-cell { min-height: 88px; }
+      .vac-chip { font-size: .68rem; }
+      .day-num { font-size: .78rem; }
+    }
+    @media (max-width: 380px) {
+      .cal-cell { min-height: 58px; }
+      .vac-chip { font-size: .52rem; padding: 1px 2px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  SETUP SCREEN                                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="setup-screen" style="display:none">
+  <div class="setup-icon">🔧</div>
+  <h2>הגדרת Firebase נדרשת</h2>
+  <p>לוח החופשות משתמש ב-Firestore לסנכרון בין כל מכשירי המשפחה בזמן אמת. צריך להוסיף את הפרטים פעם אחת.</p>
+  <ol>
+    <li>כנס ל-<a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a></li>
+    <li>צור פרויקט חדש (כל שם) → המשך ללא Google Analytics</li>
+    <li>לחץ &lt;/&gt; (Web) → הוסף אפליקציה → תן שם</li>
+    <li>העתק את ה-<code>firebaseConfig</code></li>
+    <li>Firestore Database → Create database → Start in test mode → Next → Enable</li>
+    <li>פתח את קובץ <code>vacation-calendar.html</code> ועדכן:</li>
+  </ol>
+  <pre>const firebaseConfig = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "your-project.firebaseapp.com",
+  projectId:         "your-project-id",
+  storageBucket:     "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId:             "1:123456789:web:abcdef"
+};</pre>
+  <div class="setup-note">
+    💡 אחרי עדכון ה-config, פרוס שוב ל-Vercel (git push) והלוח יתחיל לעבוד.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  APP                                                      -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+  <header>
+    <div class="logo">🌴 <span>חופשות</span> המשפחה</div>
+    <button class="theme-btn" id="theme-btn" title="שינוי ערכת נושא">🌙</button>
+  </header>
+
+  <div class="month-nav">
+    <!-- In RTL flex: first DOM element = rightmost visual position -->
+    <!-- prev-month first in DOM → appears on the RIGHT (= ← previous, earlier) -->
+    <button class="nav-btn" id="prev-month" title="חודש קודם">&#x276E;</button>
+    <div id="month-title"></div>
+    <button class="nav-btn" id="next-month" title="חודש הבא">&#x276F;</button>
+  </div>
+
+  <div class="cal-wrap">
+    <div class="cal-day-headers" id="cal-headers"></div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <div class="add-wrap">
+    <button class="add-btn" id="open-modal">
+      <span style="font-size:1.1rem">＋</span> הוסף חופשה
+    </button>
+  </div>
+
+  <div class="list-wrap">
+    <div class="list-section-title">כל החופשות</div>
+    <div id="vac-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  MODAL                                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">✈️ הוספת חופשה</div>
+      <button class="modal-close" id="close-modal" aria-label="סגור">✕</button>
+    </div>
+
+    <form id="vac-form" novalidate>
+      <div class="form-field">
+        <label for="f-name">שם החופשה *</label>
+        <input type="text" id="f-name" placeholder='למשל: חופשת פסח בחו"ל' maxlength="80" autocomplete="off" />
+        <div class="field-err" id="err-name">יש למלא שם לחופשה</div>
+      </div>
+
+      <div class="form-row-2">
+        <div>
+          <label for="f-start">תאריך התחלה *</label>
+          <input type="date" id="f-start" />
+          <div class="field-err" id="err-start">יש לבחור תאריך</div>
+        </div>
+        <div>
+          <label for="f-end">תאריך סיום *</label>
+          <input type="date" id="f-end" />
+          <div class="field-err" id="err-end">תאריך סיום חייב להיות אחרי ההתחלה</div>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="f-notes">הערות (לא חובה)</label>
+        <textarea id="f-notes" placeholder="מלון, טיסה, פעילויות..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="close-modal-2">ביטול</button>
+        <button type="submit" class="btn-primary">💾 שמור חופשה</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  FIREBASE + APP LOGIC                                     -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, deleteDoc,
+  doc, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+// ─── Firebase config — fill in your project details ──────────
+const firebaseConfig = {
+  apiKey:            "",
+  authDomain:        "",
+  projectId:         "",
+  storageBucket:     "",
+  messagingSenderId: "",
+  appId:             ""
+};
+// ─────────────────────────────────────────────────────────────
+
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  document.getElementById('setup-screen').style.display = 'block';
+} else {
+  document.getElementById('app').style.display = 'block';
+  startApp();
+}
+
+function startApp() {
+  // ── Firebase ────────────────────────────────────────────────
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const col = collection(db, 'vacations');
+
+  // ── Color palette ───────────────────────────────────────────
+  const COLORS = [
+    '#dc2626','#ea580c','#d97706','#16a34a',
+    '#0891b2','#4f46e5','#db2777','#7c3aed',
+    '#0d9488','#be185d'
+  ];
+
+  // ── State ────────────────────────────────────────────────────
+  let vacations = [];
+  const today   = new Date().toISOString().slice(0, 10);
+  let curYear   = new Date().getFullYear();
+  let curMonth  = new Date().getMonth();
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function fmtDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('he-IL', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  }
+
+  function pickColor() {
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
+
+  // ── Dark mode ────────────────────────────────────────────────
+  const savedTheme = localStorage.getItem('fam-cal-theme')
+    || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(savedTheme);
+
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('fam-cal-theme', t);
+    document.getElementById('theme-btn').textContent = t === 'dark' ? '☀️' : '🌙';
+  }
+
+  document.getElementById('theme-btn').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    setTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+
+  // ── Calendar ─────────────────────────────────────────────────
+  const HE_DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+
+  function buildDayHeaders() {
+    document.getElementById('cal-headers').innerHTML =
+      HE_DAYS.map(d => `<div class="cal-day-hdr">${d}</div>`).join('');
+  }
+
+  function renderCalendar() {
+    const firstDow     = new Date(curYear, curMonth, 1).getDay();
+    const daysInMonth  = new Date(curYear, curMonth + 1, 0).getDate();
+    const title        = new Date(curYear, curMonth, 1)
+      .toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+    document.getElementById('month-title').textContent = title;
+
+    // Build flat cells: null = empty padding, number = day
+    const cells = [];
+    for (let i = 0; i < firstDow; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    document.getElementById('cal-grid').innerHTML = cells.map(d => {
+      if (d === null) return `<div class="cal-cell empty"></div>`;
+
+      const pad    = n => String(n).padStart(2, '0');
+      const dayStr = `${curYear}-${pad(curMonth + 1)}-${pad(d)}`;
+      const isToday = dayStr === today;
+      const hits    = vacations.filter(v => v.start <= dayStr && dayStr <= v.end);
+
+      const maxChips = 2;
+      const chips = hits.slice(0, maxChips).map(v =>
+        `<span class="vac-chip" style="background:${esc(v.color)}" title="${esc(v.name)}">${esc(v.name)}</span>`
+      ).join('');
+      const more = hits.length > maxChips
+        ? `<span class="vac-more">+${hits.length - maxChips} נוספ${hits.length - maxChips === 1 ? 'ת' : 'ות'}</span>`
+        : '';
+
+      return `<div class="cal-cell${isToday ? ' today' : ''}">
+        <div class="day-num">${d}</div>
+        ${chips}${more}
+      </div>`;
+    }).join('');
+  }
+
+  // ── Vacation list ─────────────────────────────────────────────
+  function renderList() {
+    const el = document.getElementById('vac-list');
+    if (vacations.length === 0) {
+      el.innerHTML = `<div class="empty-msg">
+        <span class="empty-icon">🏝</span>
+        אין חופשות עדיין<br>
+        <small>לחץ "הוסף חופשה" כדי להתחיל</small>
+      </div>`;
+      return;
+    }
+    el.innerHTML = vacations.map(v => `
+      <div class="vac-card">
+        <div class="vac-color-bar" style="background:${esc(v.color)}"></div>
+        <div class="vac-info">
+          <div class="vac-name">${esc(v.name)}</div>
+          <div class="vac-dates">${esc(fmtDate(v.start))} — ${esc(fmtDate(v.end))}</div>
+          ${v.notes ? `<div class="vac-notes">${esc(v.notes)}</div>` : ''}
+        </div>
+        <button class="del-btn" data-id="${esc(v.id)}" data-name="${esc(v.name)}" title="מחק חופשה">🗑</button>
+      </div>
+    `).join('');
+
+    el.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', () => doDelete(btn.dataset.id, btn.dataset.name));
+    });
+  }
+
+  // ── Month nav ─────────────────────────────────────────────────
+  // In RTL flex layout: prev-month is first in DOM = rightmost visual position (‹)
+  // next-month is last in DOM = leftmost visual position (›)
+  // Visual: [‹ prev on right] [Month] [next › on left]  — wait, let me re-check.
+  // dir=rtl flex: DOM order left→right becomes right→left visually.
+  // So: prev-month (DOM first) = RIGHT side, next-month (DOM last) = LEFT side.
+  // ❮ on right = going back (earlier time). ❯ on left = going forward (later time). ✓
+
+  document.getElementById('prev-month').addEventListener('click', () => {
+    if (--curMonth < 0) { curMonth = 11; curYear--; }
+    renderCalendar();
+  });
+  document.getElementById('next-month').addEventListener('click', () => {
+    if (++curMonth > 11) { curMonth = 0; curYear++; }
+    renderCalendar();
+  });
+
+  // ── Modal ──────────────────────────────────────────────────────
+  document.getElementById('open-modal').addEventListener('click', openModal);
+  document.getElementById('close-modal').addEventListener('click', closeModal);
+  document.getElementById('close-modal-2').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  function openModal() {
+    document.getElementById('modal-overlay').classList.add('open');
+    document.getElementById('f-name').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('vac-form').reset();
+    clearErrors();
+  }
+
+  // ── Form validation ────────────────────────────────────────────
+  function showErr(id, msg) {
+    const el = document.getElementById(id);
+    if (msg) el.textContent = msg;
+    el.classList.add('show');
+  }
+  function hideErr(id) {
+    document.getElementById(id).classList.remove('show');
+  }
+  function clearErrors() {
+    ['err-name','err-start','err-end'].forEach(hideErr);
+    ['f-name','f-start','f-end'].forEach(id => {
+      document.getElementById(id).classList.remove('invalid');
+    });
+  }
+
+  document.getElementById('vac-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    clearErrors();
+
+    const nameEl  = document.getElementById('f-name');
+    const startEl = document.getElementById('f-start');
+    const endEl   = document.getElementById('f-end');
+    const notesEl = document.getElementById('f-notes');
+
+    const name  = nameEl.value.trim();
+    const start = startEl.value;
+    const end   = endEl.value;
+    const notes = notesEl.value.trim();
+
+    let valid = true;
+
+    if (!name) {
+      showErr('err-name', 'יש למלא שם לחופשה');
+      nameEl.classList.add('invalid');
+      valid = false;
+    }
+    if (!start) {
+      showErr('err-start', 'יש לבחור תאריך התחלה');
+      startEl.classList.add('invalid');
+      valid = false;
+    }
+    if (!end) {
+      showErr('err-end', 'יש לבחור תאריך סיום');
+      endEl.classList.add('invalid');
+      valid = false;
+    } else if (start && end < start) {
+      showErr('err-end', 'תאריך הסיום חייב להיות אחרי ההתחלה');
+      endEl.classList.add('invalid');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.textContent = 'שומר...';
+
+    try {
+      await addDoc(col, {
+        name,
+        start,
+        end,
+        notes,
+        color:     pickColor(),
+        createdAt: Date.now()
+      });
+      closeModal();
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '💾 שמור חופשה';
+    }
+  });
+
+  // ── Delete ──────────────────────────────────────────────────────
+  async function doDelete(id, name) {
+    if (!confirm(`למחוק את "${name}"?`)) return;
+    await deleteDoc(doc(db, 'vacations', id));
+  }
+
+  // ── Real-time subscription ──────────────────────────────────────
+  onSnapshot(query(col, orderBy('start')), snap => {
+    vacations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCalendar();
+    renderList();
+  });
+
+  // ── Boot ────────────────────────────────────────────────────────
+  buildDayHeaders();
+  renderCalendar();
+}
+</script>
+</body>
+</html>
