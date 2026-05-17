@@ -46,46 +46,6 @@
       font-size: 15px;
     }
 
-    /* ─── Setup Screen ─────────────────────────────────── */
-    #setup-screen {
-      max-width: 540px;
-      margin: 3rem auto;
-      padding: 2rem 1.75rem;
-      background: var(--card);
-      border-radius: 16px;
-      box-shadow: var(--shadow-md);
-      direction: ltr;
-    }
-    #setup-screen .setup-icon { font-size: 2.5rem; margin-bottom: .75rem; }
-    #setup-screen h2 { color: var(--accent); margin-bottom: .6rem; font-size: 1.3rem; }
-    #setup-screen p { color: var(--muted); line-height: 1.6; margin-bottom: 1rem; font-size: .9rem; }
-    #setup-screen ol { padding-left: 1.4rem; line-height: 2.2; font-size: .9rem; color: var(--text); }
-    #setup-screen ol a { color: var(--accent); }
-    #setup-screen pre {
-      background: #1e293b;
-      color: #e2e8f0;
-      padding: 1rem 1.2rem;
-      border-radius: 8px;
-      font-size: .78rem;
-      overflow-x: auto;
-      margin: 1rem 0;
-      line-height: 1.7;
-    }
-    #setup-screen .setup-note {
-      margin-top: 1.2rem;
-      padding: .85rem 1rem;
-      background: #eff6ff;
-      border-radius: 8px;
-      font-size: .85rem;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-    }
-    [data-theme="dark"] #setup-screen .setup-note {
-      background: #1e3a5f;
-      color: #93c5fd;
-      border-color: #1d4ed8;
-    }
-
     /* ─── App Shell ────────────────────────────────────── */
     #app { display: flex; flex-direction: column; min-height: 100dvh; }
 
@@ -425,37 +385,9 @@
 <body>
 
 <!-- ══════════════════════════════════════════════════════════ -->
-<!--  SETUP SCREEN                                             -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div id="setup-screen" style="display:none">
-  <div class="setup-icon">🔧</div>
-  <h2>הגדרת Firebase נדרשת</h2>
-  <p>לוח החופשות משתמש ב-Firestore לסנכרון בין כל מכשירי המשפחה בזמן אמת. צריך להוסיף את הפרטים פעם אחת.</p>
-  <ol>
-    <li>כנס ל-<a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a></li>
-    <li>צור פרויקט חדש (כל שם) → המשך ללא Google Analytics</li>
-    <li>לחץ &lt;/&gt; (Web) → הוסף אפליקציה → תן שם</li>
-    <li>העתק את ה-<code>firebaseConfig</code></li>
-    <li>Firestore Database → Create database → Start in test mode → Next → Enable</li>
-    <li>פתח את קובץ <code>vacation-calendar.html</code> ועדכן:</li>
-  </ol>
-  <pre>const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "your-project.firebaseapp.com",
-  projectId:         "your-project-id",
-  storageBucket:     "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId:             "1:123456789:web:abcdef"
-};</pre>
-  <div class="setup-note">
-    💡 אחרי עדכון ה-config, פרוס שוב ל-Vercel (git push) והלוח יתחיל לעבוד.
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════ -->
 <!--  APP                                                      -->
 <!-- ══════════════════════════════════════════════════════════ -->
-<div id="app" style="display:none">
+<div id="app">
   <header>
     <div class="logo">🌴 <span>חופשות</span> המשפחה</div>
     <button class="theme-btn" id="theme-btn" title="שינוי ערכת נושא">🌙</button>
@@ -529,60 +461,40 @@
   </div>
 </div>
 
+<!-- gun.js — zero-setup P2P real-time database -->
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+
 <!-- ══════════════════════════════════════════════════════════ -->
-<!--  FIREBASE + APP LOGIC                                     -->
+<!--  APP LOGIC — gun.js real-time sync, zero setup            -->
 <!-- ══════════════════════════════════════════════════════════ -->
-<script type="module">
-import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, deleteDoc,
-  doc, onSnapshot, query, orderBy
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+<script>
+(function () {
+  // Unique room for this family calendar — all family members share this key
+  const ROOM = 'dreyman-fam-cal-2025-v1';
 
-// ─── Firebase config — fill in your project details ──────────
-const firebaseConfig = {
-  apiKey:            "",
-  authDomain:        "",
-  projectId:         "",
-  storageBucket:     "",
-  messagingSenderId: "",
-  appId:             ""
-};
-// ─────────────────────────────────────────────────────────────
+  // Public gun.js relay servers — gun falls back to localStorage if unreachable
+  const gun = Gun(['https://gun-manhattan.herokuapp.com/gun', 'https://peer.wallie.io/gun']);
+  const db  = gun.get(ROOM);
 
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-  document.getElementById('setup-screen').style.display = 'block';
-} else {
-  document.getElementById('app').style.display = 'block';
-  startApp();
-}
-
-function startApp() {
-  // ── Firebase ────────────────────────────────────────────────
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-  const col = collection(db, 'vacations');
-
-  // ── Color palette ───────────────────────────────────────────
   const COLORS = [
     '#dc2626','#ea580c','#d97706','#16a34a',
     '#0891b2','#4f46e5','#db2777','#7c3aed',
     '#0d9488','#be185d'
   ];
 
-  // ── State ────────────────────────────────────────────────────
-  let vacations = [];
   const today   = new Date().toISOString().slice(0, 10);
   let curYear   = new Date().getFullYear();
   let curMonth  = new Date().getMonth();
 
-  // ── Helpers ──────────────────────────────────────────────────
+  // vacMap holds the current live state: id → vacation object
+  const vacMap = new Map();
+
+  // ── Helpers ───────────────────────────────────────────────────
   function esc(s) {
     return String(s ?? '')
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
-
   function fmtDate(dateStr) {
     if (!dateStr) return '';
     const [y, m, d] = dateStr.split('-').map(Number);
@@ -590,28 +502,31 @@ function startApp() {
       day: 'numeric', month: 'long', year: 'numeric'
     });
   }
-
-  function pickColor() {
-    return COLORS[Math.floor(Math.random() * COLORS.length)];
+  function pickColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
+  function uid() {
+    return typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+  function sortedVacs() {
+    return [...vacMap.values()].sort((a, b) => a.start.localeCompare(b.start));
   }
 
-  // ── Dark mode ────────────────────────────────────────────────
-  const savedTheme = localStorage.getItem('fam-cal-theme')
+  // ── Dark mode ─────────────────────────────────────────────────
+  const saved = localStorage.getItem('fam-cal-theme')
     || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  setTheme(savedTheme);
+  setTheme(saved);
 
   function setTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('fam-cal-theme', t);
     document.getElementById('theme-btn').textContent = t === 'dark' ? '☀️' : '🌙';
   }
-
   document.getElementById('theme-btn').addEventListener('click', () => {
-    const cur = document.documentElement.getAttribute('data-theme');
-    setTheme(cur === 'dark' ? 'light' : 'dark');
+    setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
 
-  // ── Calendar ─────────────────────────────────────────────────
+  // ── Calendar ──────────────────────────────────────────────────
   const HE_DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 
   function buildDayHeaders() {
@@ -620,49 +535,41 @@ function startApp() {
   }
 
   function renderCalendar() {
-    const firstDow     = new Date(curYear, curMonth, 1).getDay();
-    const daysInMonth  = new Date(curYear, curMonth + 1, 0).getDate();
-    const title        = new Date(curYear, curMonth, 1)
-      .toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
-    document.getElementById('month-title').textContent = title;
+    const vacations  = sortedVacs();
+    const firstDow   = new Date(curYear, curMonth, 1).getDay();
+    const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+    document.getElementById('month-title').textContent =
+      new Date(curYear, curMonth, 1).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
 
-    // Build flat cells: null = empty padding, number = day
     const cells = [];
     for (let i = 0; i < firstDow; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     while (cells.length % 7 !== 0) cells.push(null);
 
+    const pad = n => String(n).padStart(2, '0');
     document.getElementById('cal-grid').innerHTML = cells.map(d => {
       if (d === null) return `<div class="cal-cell empty"></div>`;
-
-      const pad    = n => String(n).padStart(2, '0');
-      const dayStr = `${curYear}-${pad(curMonth + 1)}-${pad(d)}`;
+      const dayStr  = `${curYear}-${pad(curMonth + 1)}-${pad(d)}`;
       const isToday = dayStr === today;
       const hits    = vacations.filter(v => v.start <= dayStr && dayStr <= v.end);
-
-      const maxChips = 2;
-      const chips = hits.slice(0, maxChips).map(v =>
+      const chips   = hits.slice(0, 2).map(v =>
         `<span class="vac-chip" style="background:${esc(v.color)}" title="${esc(v.name)}">${esc(v.name)}</span>`
       ).join('');
-      const more = hits.length > maxChips
-        ? `<span class="vac-more">+${hits.length - maxChips} נוספ${hits.length - maxChips === 1 ? 'ת' : 'ות'}</span>`
-        : '';
-
+      const more    = hits.length > 2 ? `<span class="vac-more">+${hits.length - 2}</span>` : '';
       return `<div class="cal-cell${isToday ? ' today' : ''}">
-        <div class="day-num">${d}</div>
-        ${chips}${more}
+        <div class="day-num">${d}</div>${chips}${more}
       </div>`;
     }).join('');
   }
 
   // ── Vacation list ─────────────────────────────────────────────
   function renderList() {
+    const vacations = sortedVacs();
     const el = document.getElementById('vac-list');
-    if (vacations.length === 0) {
+    if (!vacations.length) {
       el.innerHTML = `<div class="empty-msg">
         <span class="empty-icon">🏝</span>
-        אין חופשות עדיין<br>
-        <small>לחץ "הוסף חופשה" כדי להתחיל</small>
+        אין חופשות עדיין<br><small>לחץ "הוסף חופשה" כדי להתחיל</small>
       </div>`;
       return;
     }
@@ -674,23 +581,32 @@ function startApp() {
           <div class="vac-dates">${esc(fmtDate(v.start))} — ${esc(fmtDate(v.end))}</div>
           ${v.notes ? `<div class="vac-notes">${esc(v.notes)}</div>` : ''}
         </div>
-        <button class="del-btn" data-id="${esc(v.id)}" data-name="${esc(v.name)}" title="מחק חופשה">🗑</button>
-      </div>
-    `).join('');
-
-    el.querySelectorAll('.del-btn').forEach(btn => {
-      btn.addEventListener('click', () => doDelete(btn.dataset.id, btn.dataset.name));
-    });
+        <button class="del-btn" data-id="${esc(v.id)}" data-name="${esc(v.name)}" title="מחק">🗑</button>
+      </div>`).join('');
+    el.querySelectorAll('.del-btn').forEach(btn =>
+      btn.addEventListener('click', () => {
+        if (confirm(`למחוק את "${btn.dataset.name}"?`)) {
+          // gun deletion: put null on the node
+          db.get(btn.dataset.id).put(null);
+        }
+      })
+    );
   }
 
-  // ── Month nav ─────────────────────────────────────────────────
-  // In RTL flex layout: prev-month is first in DOM = rightmost visual position (‹)
-  // next-month is last in DOM = leftmost visual position (›)
-  // Visual: [‹ prev on right] [Month] [next › on left]  — wait, let me re-check.
-  // dir=rtl flex: DOM order left→right becomes right→left visually.
-  // So: prev-month (DOM first) = RIGHT side, next-month (DOM last) = LEFT side.
-  // ❮ on right = going back (earlier time). ❯ on left = going forward (later time). ✓
+  function refresh() { renderCalendar(); renderList(); }
 
+  // ── Real-time gun.js subscription ─────────────────────────────
+  // Fires for each item on load + whenever any peer updates
+  db.map().on((data, key) => {
+    if (data && data.id && data.start && data.end) {
+      vacMap.set(key, { id: key, ...data });
+    } else {
+      vacMap.delete(key);
+    }
+    refresh();
+  });
+
+  // ── Month nav ─────────────────────────────────────────────────
   document.getElementById('prev-month').addEventListener('click', () => {
     if (--curMonth < 0) { curMonth = 11; curYear--; }
     renderCalendar();
@@ -700,119 +616,63 @@ function startApp() {
     renderCalendar();
   });
 
-  // ── Modal ──────────────────────────────────────────────────────
+  // ── Modal ─────────────────────────────────────────────────────
+  const overlay = document.getElementById('modal-overlay');
   document.getElementById('open-modal').addEventListener('click', openModal);
   document.getElementById('close-modal').addEventListener('click', closeModal);
   document.getElementById('close-modal-2').addEventListener('click', closeModal);
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeModal();
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-  });
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
   function openModal() {
-    document.getElementById('modal-overlay').classList.add('open');
+    overlay.classList.add('open');
     document.getElementById('f-name').focus();
   }
-
   function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('open');
+    overlay.classList.remove('open');
     document.getElementById('vac-form').reset();
-    clearErrors();
+    ['err-name','err-start','err-end'].forEach(id => document.getElementById(id).classList.remove('show'));
+    ['f-name','f-start','f-end'].forEach(id => document.getElementById(id).classList.remove('invalid'));
   }
 
-  // ── Form validation ────────────────────────────────────────────
-  function showErr(id, msg) {
-    const el = document.getElementById(id);
-    if (msg) el.textContent = msg;
-    el.classList.add('show');
-  }
-  function hideErr(id) {
-    document.getElementById(id).classList.remove('show');
-  }
-  function clearErrors() {
-    ['err-name','err-start','err-end'].forEach(hideErr);
-    ['f-name','f-start','f-end'].forEach(id => {
-      document.getElementById(id).classList.remove('invalid');
-    });
-  }
-
-  document.getElementById('vac-form').addEventListener('submit', async e => {
+  // ── Form submit ───────────────────────────────────────────────
+  document.getElementById('vac-form').addEventListener('submit', e => {
     e.preventDefault();
-    clearErrors();
-
     const nameEl  = document.getElementById('f-name');
     const startEl = document.getElementById('f-start');
     const endEl   = document.getElementById('f-end');
-    const notesEl = document.getElementById('f-notes');
+    const name    = nameEl.value.trim();
+    const start   = startEl.value;
+    const end     = endEl.value;
+    const notes   = document.getElementById('f-notes').value.trim();
 
-    const name  = nameEl.value.trim();
-    const start = startEl.value;
-    const end   = endEl.value;
-    const notes = notesEl.value.trim();
-
-    let valid = true;
-
-    if (!name) {
-      showErr('err-name', 'יש למלא שם לחופשה');
-      nameEl.classList.add('invalid');
-      valid = false;
+    let ok = true;
+    function fieldErr(id, el, msg) {
+      document.getElementById(id).textContent = msg;
+      document.getElementById(id).classList.add('show');
+      el.classList.add('invalid');
+      ok = false;
     }
-    if (!start) {
-      showErr('err-start', 'יש לבחור תאריך התחלה');
-      startEl.classList.add('invalid');
-      valid = false;
-    }
-    if (!end) {
-      showErr('err-end', 'יש לבחור תאריך סיום');
-      endEl.classList.add('invalid');
-      valid = false;
-    } else if (start && end < start) {
-      showErr('err-end', 'תאריך הסיום חייב להיות אחרי ההתחלה');
-      endEl.classList.add('invalid');
-      valid = false;
-    }
+    ['err-name','err-start','err-end'].forEach(id => document.getElementById(id).classList.remove('show'));
+    ['f-name','f-start','f-end'].forEach(id => document.getElementById(id).classList.remove('invalid'));
 
-    if (!valid) return;
+    if (!name)  fieldErr('err-name',  nameEl,  'יש למלא שם לחופשה');
+    if (!start) fieldErr('err-start', startEl, 'יש לבחור תאריך התחלה');
+    if (!end)   fieldErr('err-end',   endEl,   'יש לבחור תאריך סיום');
+    else if (start && end < start) fieldErr('err-end', endEl, 'תאריך הסיום חייב להיות אחרי ההתחלה');
 
-    const btn = e.target.querySelector('button[type=submit]');
-    btn.disabled = true;
-    btn.textContent = 'שומר...';
+    if (!ok) return;
 
-    try {
-      await addDoc(col, {
-        name,
-        start,
-        end,
-        notes,
-        color:     pickColor(),
-        createdAt: Date.now()
-      });
-      closeModal();
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '💾 שמור חופשה';
-    }
+    const id = uid();
+    // gun.js put: stored under the vacation's ID key in the room
+    db.get(id).put({ id, name, start, end, notes, color: pickColor(), createdAt: Date.now() });
+    closeModal();
   });
 
-  // ── Delete ──────────────────────────────────────────────────────
-  async function doDelete(id, name) {
-    if (!confirm(`למחוק את "${name}"?`)) return;
-    await deleteDoc(doc(db, 'vacations', id));
-  }
-
-  // ── Real-time subscription ──────────────────────────────────────
-  onSnapshot(query(col, orderBy('start')), snap => {
-    vacations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderCalendar();
-    renderList();
-  });
-
-  // ── Boot ────────────────────────────────────────────────────────
+  // ── Boot ──────────────────────────────────────────────────────
   buildDayHeaders();
-  renderCalendar();
-}
+  renderCalendar(); // show empty calendar immediately; gun.js fills in data async
+})();
 </script>
 </body>
 </html>
