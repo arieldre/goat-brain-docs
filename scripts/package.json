@@ -1,0 +1,8 @@
+{
+  "name": "creative-intel",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/cohort.test.js tests/text-chunk.test.js tests/geo-clusters.test.js"
+  }
+}

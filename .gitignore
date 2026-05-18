@@ -1,1 +1,10 @@
 .vercel
+
+# Local automation — never commit
+scripts/cookies_*.json
+scripts/mongo_login.py
+scripts/extract_cookies.py
+scripts/decrypt_cookies.py
+scripts/get_cookies_via_playwright.py
+scripts/atlas_login.py
+scripts/atlas_state.json

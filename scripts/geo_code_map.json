@@ -1,0 +1,9 @@
+{
+  "tier1": ["US", "CA", "GB", "DE", "AU", "JP", "KR"],
+  "tier2": ["FR", "IT", "ES", "BR", "MX", "SE", "NL", "NO", "CH", "AT", "DK", "FI", "SG", "NZ", "IL"],
+  "descriptions": {
+    "tier1": "High-value markets — premium CPIs, strong ROAS",
+    "tier2": "Mid-tier markets — moderate CPIs",
+    "tier3": "Emerging/volume markets — low CPIs"
+  }
+}

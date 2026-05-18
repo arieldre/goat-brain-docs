@@ -271,6 +271,72 @@
     color: var(--accent);
     text-decoration: none;
   }
+
+  /* KB Search */
+  .search-wrap { margin-bottom: 40px; }
+  .search-bar { display: flex; gap: 8px; margin-bottom: 8px; }
+  .search-input {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; color: var(--text);
+    font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-select {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; color: var(--text); font-size: 13px; cursor: pointer; outline: none;
+  }
+  .search-btn {
+    background: var(--accent); border: none; border-radius: 10px;
+    padding: 10px 20px; color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
+  }
+  .search-btn:hover { opacity: 0.85; }
+  .search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .search-hint { font-size: 11px; color: var(--muted); }
+  .search-results { margin-top: 16px; display: none; }
+  .result-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
+  }
+  .result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .result-source { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .result-score {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600;
+  }
+  .score-high { background: #052e16; color: var(--green); }
+  .score-med  { background: #1c1400; color: var(--amber); }
+  .score-low  { background: #1a1a1a; color: var(--muted); }
+  :root[data-theme="light"] .score-high { background: #dcfce7; }
+  :root[data-theme="light"] .score-med  { background: #fef3c7; }
+  :root[data-theme="light"] .score-low  { background: #f3f4f6; }
+  .result-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .search-error { font-size: 13px; color: #ef4444; margin-top: 8px; }
+
+  /* Password modal */
+  .pw-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .pw-overlay.active { display: flex; }
+  .pw-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; width: 320px; text-align: center;
+  }
+  .pw-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .pw-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .pw-input {
+    width: 100%; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px;
+    outline: none; margin-bottom: 12px; text-align: center; letter-spacing: 2px;
+    box-sizing: border-box;
+  }
+  .pw-input:focus { border-color: var(--accent); }
+  .pw-btn {
+    width: 100%; background: var(--accent); border: none; border-radius: 8px;
+    padding: 10px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .pw-err { font-size: 11px; color: #ef4444; margin-top: 8px; display: none; }
 </style>
 </head>
 <body>
@@ -296,21 +362,36 @@
 <!-- Stats -->
 <div class="stats">
   <div class="stat">
-    <div class="stat-num">55+</div>
+    <div class="stat-num">60+</div>
     <div class="stat-label">Vectorized files</div>
   </div>
   <div class="stat">
-    <div class="stat-num">110</div>
+    <div class="stat-num">129</div>
     <div class="stat-label">Best practices</div>
   </div>
   <div class="stat">
-    <div class="stat-num">5</div>
+    <div class="stat-num">6</div>
     <div class="stat-label">Knowledge categories</div>
   </div>
   <div class="stat">
     <div class="stat-num">2</div>
     <div class="stat-label">Full game profiles</div>
   </div>
+</div>
+
+<!-- KB Search -->
+<div class="search-wrap">
+  <div class="search-bar">
+    <input class="search-input" id="kbQuery" type="text" placeholder="Ask the knowledge base… e.g. &ldquo;Android RPG CPI benchmarks&rdquo;" />
+    <select class="search-select" id="kbGame">
+      <option value="">All games</option>
+      <option value="uh">UH only</option>
+      <option value="inv">INV only</option>
+    </select>
+    <button class="search-btn" id="kbBtn" onclick="kbSearch()">Search</button>
+  </div>
+  <div class="search-hint">Semantic search &middot; 33 reference files &middot; Pinecone claude-memory</div>
+  <div class="search-results" id="kbResults"></div>
 </div>
 
 <!-- Category 1: Game Profiles -->
@@ -358,6 +439,67 @@
       <div class="entry-name">Churn Triggers</div>
       <div class="entry-desc">UH: bot lobbies (fixed v5.17), rank imbalance. INV: server issues, gacha variance, late-game progression wall, slow communication.</div>
       <span class="tag orange">risk</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Category: 2025 Intelligence -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-dot" style="background: var(--orange);"></div>
+    <div class="section-title">2025 Intelligence</div>
+    <div class="section-count">8 new files</div>
+  </div>
+  <div class="entries">
+    <div class="entry">
+      <div class="entry-name">INV Competitor Creatives 2025</div>
+      <div class="entry-desc">7 gacha/RPG competitors: RAID ($477M UA/yr, declining), AFK Journey (AI-ad pivot), Genshin/HSR/WuWa, Epic Seven. CPI benchmarks + exploitable creative weaknesses.</div>
+      <span class="tag amber">INV</span>
+      <span class="tag orange">competitive</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">UH Competitor Creatives 2025</div>
+      <div class="entry-desc">8 FPS competitors: Delta Force (3,239 creatives), CODM, Critical Ops, Standoff 2, Blood Strike, Arena Breakout. Anti-P2W hook unoccupied. FPS CPI iOS $4.50–8.00.</div>
+      <span class="tag pink">UH</span>
+      <span class="tag orange">competitive</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">TikTok UA — Mobile Gaming 2025</div>
+      <div class="entry-desc">Smart+ = TikTok Advantage+. VBO Android-only. 7-14d creative fatigue vs FB's 14-21d. CPI 15-25% lower than Meta. tiktokglobal_int AF integration. INV/UH channel paths.</div>
+      <span class="tag pink">TikTok</span>
+      <span class="tag">channel</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Mobile Gaming Market 2025</div>
+      <div class="entry-desc">$82B revenue (+1% YoY). AppLovin AXON 2.0 now #2 iOS network. Q2 cheapest CPM ($9.52 vs $15.16 Q4). ATT opt-in 35% stable. iOS CPI +15-20% vs Android.</div>
+      <span class="tag green">market</span>
+      <span class="tag">benchmarks</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">UA Budget Allocation &amp; Scaling</div>
+      <div class="entry-desc">50/30/20 channel mix (Core/Scale/Test). 50-events rule governs all scaling. Creative budget 10-15% of UA spend. AppLovin entry = D7 CPPD &times; 10 min daily budget.</div>
+      <span class="tag green">strategy</span>
+      <span class="tag">budgeting</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">ASO &amp; Paid UA</div>
+      <div class="entry-desc">Store CVR 20%→30% cuts effective CPI 33%. CPPs match landing page to creative (+10-30% CVR). AppTweak for ASO + SensorTower for competitive intel. INV/UH store playbooks.</div>
+      <span class="tag teal">ASO</span>
+      <span class="tag green">CVR</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">UGC &amp; Creator Strategy</div>
+      <div class="entry-desc">+313% CTR, -60% CPI vs polished ads. Micro creators best ROI. Insense recommended for gaming. INV gacha pull patterns. UH clutch clip + original audio. Attribution undervalued 2-4×.</div>
+      <span class="tag">UGC</span>
+      <span class="tag">creators</span>
+    </div>
+    <div class="entry">
+      <div class="entry-name">Retargeting Strategy</div>
+      <div class="entry-desc">iOS SKAN 4.0 cannot measure re-engagement (need Adikteev DSP). Android GAID still works 2025. INV trigger: new banner within 24h. UH trigger: season reset. Google ACe needs 250K installs.</div>
+      <span class="tag amber">retargeting</span>
+      <span class="tag">iOS</span>
     </div>
   </div>
 </div>
@@ -557,7 +699,7 @@
   <div class="section-header">
     <div class="section-dot" style="background: var(--amber);"></div>
     <div class="section-title">Best Practices</div>
-    <div class="section-count">110 entries across 18 domains</div>
+    <div class="section-count">129 entries across 18 domains</div>
   </div>
   <div class="bp-grid">
     <div class="bp-item">
@@ -696,6 +838,101 @@
 </footer>
 
 </div>
+
+<!-- Password modal -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-title">KB Search</div>
+    <div class="pw-sub">Enter the team password to search</div>
+    <input class="pw-input" id="pwInput" type="password" placeholder="••••••••" />
+    <button class="pw-btn" id="pwSubmit">Unlock</button>
+    <div class="pw-err" id="pwErr">Wrong password</div>
+  </div>
+</div>
+
+<script>
+  const KB_API = '/api/kb-query';
+
+  function getPw()    { return localStorage.getItem('kb_pw') || ''; }
+  function savePw(p)  { localStorage.setItem('kb_pw', p); }
+
+  function showPwModal(onSuccess) {
+    const overlay = document.getElementById('pwOverlay');
+    overlay.classList.add('active');
+    const input   = document.getElementById('pwInput');
+    const errEl   = document.getElementById('pwErr');
+    input.value   = '';
+    errEl.style.display = 'none';
+    setTimeout(() => input.focus(), 50);
+    document.getElementById('pwSubmit').onclick = async () => {
+      const pw = input.value.trim();
+      if (!pw) return;
+      const res = await fetch(KB_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: 'test', password: pw }),
+      });
+      if (res.status === 401) { errEl.style.display = 'block'; return; }
+      savePw(pw);
+      overlay.classList.remove('active');
+      onSuccess(pw);
+    };
+    input.onkeydown = e => { if (e.key === 'Enter') document.getElementById('pwSubmit').click(); };
+  }
+
+  async function kbSearch() {
+    const query = document.getElementById('kbQuery').value.trim();
+    if (!query) return;
+    const btn        = document.getElementById('kbBtn');
+    const resultsDiv = document.getElementById('kbResults');
+    btn.disabled     = true;
+    btn.textContent  = 'Searching…';
+    resultsDiv.style.display = 'block';
+    resultsDiv.innerHTML = '<div style="color:var(--muted);font-size:13px">Searching…</div>';
+
+    const doSearch = async (pw) => {
+      try {
+        const game = document.getElementById('kbGame').value;
+        const res  = await fetch(KB_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, game: game || undefined, limit: 8, password: pw }),
+        });
+        if (res.status === 401) { savePw(''); showPwModal(doSearch); return; }
+        const data = await res.json();
+        if (data.error) { resultsDiv.innerHTML = `<div class="search-error">Error: ${data.error}</div>`; return; }
+        if (!data.results?.length) {
+          resultsDiv.innerHTML = '<div style="color:var(--muted);font-size:13px">No results. Try different terms.</div>';
+          return;
+        }
+        resultsDiv.innerHTML = data.results.map(r => {
+          const sc   = r.score >= 85 ? 'score-high' : r.score >= 70 ? 'score-med' : 'score-low';
+          const name = r.source.replace(/^reference_/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          const txt  = r.text.slice(0, 350).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          return `<div class="result-item">
+            <div class="result-header">
+              <span class="result-source">${name}</span>
+              <span class="result-score ${sc}">${r.score}% match</span>
+            </div>
+            <div class="result-text">${txt}…</div>
+          </div>`;
+        }).join('');
+      } catch (e) {
+        resultsDiv.innerHTML = `<div class="search-error">Error: ${e.message}</div>`;
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Search';
+      }
+    };
+
+    const pw = getPw();
+    if (!pw) { showPwModal(doSearch); } else { await doSearch(pw); }
+  }
+
+  document.getElementById('kbQuery').addEventListener('keydown', e => {
+    if (e.key === 'Enter') kbSearch();
+  });
+</script>
 
 <script>
   const root = document.documentElement;
