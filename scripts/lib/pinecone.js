@@ -23,6 +23,7 @@ export async function embedTexts(texts, inputType = 'passage') {
   });
   if (!res.ok) throw new Error(`Pinecone embed failed: ${res.status} ${await res.text()}`);
   const data = await res.json();
+  if (!Array.isArray(data.data)) throw new Error(`Pinecone embed: unexpected body: ${JSON.stringify(data).slice(0, 200)}`);
   return data.data.map(d => d.values);
 }
 

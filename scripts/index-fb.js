@@ -244,8 +244,9 @@ async function run() {
 
   const allFailed = upserted === 0 && errors > 0;
   console.log(`\n\n${allFailed ? '✗ FAILED' : '✓ Done'}: ${upserted} vectors upserted to marketing-creatives`);
-  if (errors) console.log(`  Errors: ${errors}`);
+  if (errors) console.log(`  Errors: ${errors} (${Math.round(errors * 100 / (upserted + errors))}% failure rate)`);
   if (allFailed) process.exit(1);
+  if (errors > 0) process.exit(2); // partial failure — CI treats as warning
 
   // Summary table
   const winners = tiered.filter(c => c.is_winner);

@@ -16,14 +16,19 @@ export function getCreds(game) {
 
 export async function fbGetAll(token, urlPath, params = {}) {
   const items = [];
-  const qs = new URLSearchParams({ access_token: token, limit: '500', ...params });
+  const qs = new URLSearchParams({ limit: '500', ...params }); // token via header, not URL param
   let url = `${FB_BASE}/${urlPath}?${qs}`;
+  const hdrs = { 'Authorization': `Bearer ${token}` };
   while (url) {
-    const res  = await fetch(url);
+    const res  = await fetch(url, { headers: hdrs });
     const data = await res.json();
     if (data.error) throw new Error(`FB API: ${data.error.message} (code=${data.error.code})`);
-    items.push(...(data.data || []));
-    url = data.paging?.next || null;
+    if (!Array.isArray(data.data)) throw new Error(`FB API: unexpected response shape, keys=${Object.keys(data).join(',')}`);
+    items.push(...data.data);
+    // Strip access_token from paging.next — token travels via header only
+    const next = data.paging?.next;
+    if (next) { const u = new URL(next); u.searchParams.delete('access_token'); url = u.toString(); }
+    else url = null;
   }
   return items;
 }
@@ -58,8 +63,9 @@ export function adRetention(ad) {
   if (!p25arr?.[0]) return null;
   const p25 = parseFloat(p25arr[0].value);
   if (p25 < 100) return null;
+  const imp  = parseInt(ad.impressions);
+  if (!imp || imp < 100) return null;
   const p75  = parseFloat(ad.video_p75_watched_actions?.[0]?.value  || 0);
-  const imp  = parseInt(ad.impressions) || 1;
   return {
     hookRate: p25 / imp,
     holdRate: p25 > 0 ? p75 / p25 : 0,

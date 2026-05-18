@@ -75,11 +75,13 @@ export function scoreCreatives(creatives) {
     const [wCpi, wCtr, wHook, wHold] = hasRetention && hookRates.length >= 3
       ? [0.50, 0.20, 0.15, 0.15]
       : [0.70, 0.30, 0.00, 0.00];
+    const hookZ = hasRetention ? zscore(hookRates, c.hook_rate) : 0;
+    const holdZ = hasRetention ? zscore(holdRates, c.hold_rate) : 0;
     const composite =
-      -zscore(cpis,      c.cpi)                        * wCpi +
-       zscore(ctrs,      c.ctr)                        * wCtr +
-       zscore(hookRates, hasRetention ? c.hook_rate : 0) * wHook +
-       zscore(holdRates, hasRetention ? c.hold_rate : 0) * wHold;
+      -zscore(cpis, c.cpi) * wCpi +
+       zscore(ctrs, c.ctr) * wCtr +
+       hookZ * wHook +
+       holdZ * wHold;
     return {
       ...c,
       efficiency_score: Math.round(Math.max(0, Math.min(100, 50 + composite * 20))),
@@ -102,7 +104,7 @@ export function computeCohortStats(scored) {
     const spends = group.map(c => c.spend);
     stats[k] = {
       count:          group.length,
-      effQuartiles:   quartiles(effs),
+      effQuartiles:   effs.length >= 2 ? quartiles(effs) : null, // single-creative cohort → all quartiles equal → all become TOP
       spendQuartiles: quartiles(spends),
     };
   }
@@ -113,7 +115,7 @@ export function computeCohortStats(scored) {
 export function extractConcept(creativeName) {
   const segs = creativeName.split(/[\s_]+/);
   for (const s of segs) {
-    if (/^(INV|UH|SH|UA)$/i.test(s))         continue; // game / funnel prefix
+    if (/^(INV|UH|UA)$/i.test(s))             continue; // game / funnel prefix
     if (/^[A-Za-z]{3}\d{2}$/.test(s))         continue; // NOV25, APR26
     if (/^\d+s$/.test(s))                      continue; // 30s, 60s
     if (/^\d+x\d+$/.test(s))                   continue; // 1080x1920

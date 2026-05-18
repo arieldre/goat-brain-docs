@@ -51,7 +51,7 @@ async function fetchSourceVector(name, game, platform, objective) {
         console.error(`  [query] found exact vector for ${id}`);
         return { vector: vec.values, metadata: vec.metadata };
       }
-    } catch (_) {}
+    } catch (err) { console.warn(`  [fetchSourceVector] fetchVectors failed, falling back: ${err.message}`); }
   }
 
   // Fallback: query by metadata filter to find any match by name
@@ -107,7 +107,7 @@ async function run() {
 
   // 4. Filter self from results
   const matches = (res.matches || [])
-    .filter(m => m.metadata?.creative_name !== name)
+    .filter(m => !(m.metadata?.creative_name === name && m.metadata?.game === game && (!platform || m.metadata?.platform === platform) && (!objective || m.metadata?.objective === objective)))
     .slice(0, top);
 
   if (asJson) {
